@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model categories {
+  category_id   Int        @id @default(autoincrement()) @db.SmallInt
+  category_code String     @unique @db.VarChar(10)
+  category_name String     @unique @db.VarChar(100)
+  description   String?
+  is_active     Boolean    @default(true)
+  created_at    DateTime   @default(now()) @db.Timestamp(6)
+  updated_at    DateTime   @default(now()) @db.Timestamp(6)
+  products      products[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model demand_history {
+  demand_id       Int      @id @default(autoincrement())
+  product_id      Int
+  period_year     Int
+  period_month    Int      @db.SmallInt
+  demand_quantity Decimal  @default(0.00) @db.Decimal(12, 2)
+  notes           String?  @db.VarChar(255)
+  recorded_by     Int?
+  created_at      DateTime @default(now()) @db.Timestamp(6)
+  updated_at      DateTime @default(now()) @db.Timestamp(6)
+  products        products @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  users           users?   @relation(fields: [recorded_by], references: [user_id])
+
+  @@unique([product_id, period_year, period_month])
+  @@index([period_year, period_month], map: "idx_dh_period")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model eoq_calculations {
+  calculation_id       Int                    @id @default(autoincrement())
+  parameter_id         Int
+  product_id           Int
+  eoq_quantity         Decimal                @db.Decimal(14, 4)
+  reorder_point        Decimal                @db.Decimal(14, 4)
+  safety_stock         Decimal                @default(0.0000) @db.Decimal(14, 4)
+  max_stock_level      Decimal?               @db.Decimal(14, 4)
+  orders_per_year      Decimal?               @db.Decimal(10, 4)
+  order_interval_days  Decimal?               @db.Decimal(10, 2)
+  total_ordering_cost  Decimal?               @db.Decimal(15, 2)
+  total_holding_cost   Decimal?               @db.Decimal(15, 2)
+  total_inventory_cost Decimal?               @db.Decimal(15, 2)
+  lead_time_days       Int                    @default(0) @db.SmallInt
+  calculation_date     DateTime               @default(now()) @db.Timestamp(6)
+  calculated_by        Int?
+  notes                String?
+  users                users?                 @relation(fields: [calculated_by], references: [user_id])
+  eoq_parameters       eoq_parameters         @relation(fields: [parameter_id], references: [parameter_id], onDelete: NoAction)
+  products             products               @relation(fields: [product_id], references: [product_id], onDelete: NoAction)
+  purchase_order_items purchase_order_items[]
+
+  @@index([calculation_date], map: "idx_ec_calc_date")
+  @@index([product_id], map: "idx_ec_product")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model eoq_parameters {
+  parameter_id          Int                @id @default(autoincrement())
+  product_id            Int
+  annual_demand         Decimal            @db.Decimal(14, 4)
+  ordering_cost         Decimal            @db.Decimal(15, 2)
+  holding_cost_per_unit Decimal            @db.Decimal(15, 4)
+  holding_cost_pct      Decimal?           @db.Decimal(5, 2)
+  demand_source         String             @default("manual") @db.VarChar(20)
+  working_days_per_year Int                @default(365) @db.SmallInt
+  effective_date        DateTime           @db.Date
+  is_active             Boolean            @default(true)
+  notes                 String?
+  created_by            Int?
+  created_at            DateTime           @default(now()) @db.Timestamp(6)
+  updated_at            DateTime           @default(now()) @db.Timestamp(6)
+  eoq_calculations      eoq_calculations[]
+  users                 users?             @relation(fields: [created_by], references: [user_id])
+  products              products           @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+
+  @@index([effective_date], map: "idx_ep_effective_date")
+  @@index([product_id, is_active], map: "idx_ep_product_active")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model product_suppliers {
+  product_supplier_id Int       @id @default(autoincrement())
+  product_id          Int
+  supplier_id         Int
+  lead_time_days      Int       @default(0) @db.SmallInt
+  min_order_qty       Decimal   @default(1.00) @db.Decimal(12, 2)
+  supplier_price      Decimal?  @db.Decimal(15, 2)
+  is_primary          Boolean   @default(false)
+  created_at          DateTime  @default(now()) @db.Timestamp(6)
+  updated_at          DateTime  @default(now()) @db.Timestamp(6)
+  products            products  @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  suppliers           suppliers @relation(fields: [supplier_id], references: [supplier_id], onDelete: Cascade)
+
+  @@unique([product_id, supplier_id])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model products {
+  product_id           Int                    @id @default(autoincrement())
+  category_id          Int                    @db.SmallInt
+  unit_id              Int                    @db.SmallInt
+  product_code         String                 @unique @db.VarChar(30)
+  product_name         String                 @db.VarChar(200)
+  description          String?
+  purchase_price       Decimal                @default(0.00) @db.Decimal(15, 2)
+  selling_price        Decimal?               @db.Decimal(15, 2)
+  min_stock            Decimal                @default(0.00) @db.Decimal(12, 2)
+  max_stock            Decimal?               @db.Decimal(12, 2)
+  is_active            Boolean                @default(true)
+  created_at           DateTime               @default(now()) @db.Timestamp(6)
+  updated_at           DateTime               @default(now()) @db.Timestamp(6)
+  demand_history       demand_history[]
+  eoq_calculations     eoq_calculations[]
+  eoq_parameters       eoq_parameters[]
+  product_suppliers    product_suppliers[]
+  categories           categories             @relation(fields: [category_id], references: [category_id], onDelete: NoAction)
+  units                units                  @relation(fields: [unit_id], references: [unit_id], onDelete: NoAction)
+  purchase_order_items purchase_order_items[]
+  stock                stock?
+  stock_transactions   stock_transactions[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model purchase_order_items {
+  po_item_id        Int               @id @default(autoincrement())
+  po_id             Int
+  product_id        Int
+  calculation_id    Int?
+  quantity_ordered  Decimal           @db.Decimal(14, 4)
+  quantity_received Decimal           @default(0.0000) @db.Decimal(14, 4)
+  unit_price        Decimal           @db.Decimal(15, 2)
+  subtotal          Decimal?          @default(dbgenerated("(quantity_ordered * unit_price)")) @db.Decimal(30, 2)
+  notes             String?           @db.VarChar(500)
+  eoq_calculations  eoq_calculations? @relation(fields: [calculation_id], references: [calculation_id])
+  purchase_orders   purchase_orders   @relation(fields: [po_id], references: [po_id], onDelete: Cascade)
+  products          products          @relation(fields: [product_id], references: [product_id], onDelete: NoAction)
+
+  @@unique([po_id, product_id])
+  @@index([product_id], map: "idx_poi_product")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model purchase_orders {
+  po_id                                    Int                    @id @default(autoincrement())
+  supplier_id                              Int
+  po_number                                String                 @unique @db.VarChar(30)
+  order_date                               DateTime               @db.Date
+  expected_delivery_date                   DateTime?              @db.Date
+  actual_delivery_date                     DateTime?              @db.Date
+  status                                   String                 @default("draft") @db.VarChar(20)
+  total_amount                             Decimal                @default(0.00) @db.Decimal(18, 2)
+  notes                                    String?
+  created_by                               Int?
+  approved_by                              Int?
+  approved_at                              DateTime?              @db.Timestamp(6)
+  created_at                               DateTime               @default(now()) @db.Timestamp(6)
+  updated_at                               DateTime               @default(now()) @db.Timestamp(6)
+  purchase_order_items                     purchase_order_items[]
+  users_purchase_orders_approved_byTousers users?                 @relation("purchase_orders_approved_byTousers", fields: [approved_by], references: [user_id])
+  users_purchase_orders_created_byTousers  users?                 @relation("purchase_orders_created_byTousers", fields: [created_by], references: [user_id])
+  suppliers                                suppliers              @relation(fields: [supplier_id], references: [supplier_id], onDelete: NoAction)
+
+  @@index([order_date], map: "idx_po_order_date")
+  @@index([status], map: "idx_po_status")
+  @@index([supplier_id], map: "idx_po_supplier")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model stock {
+  stock_id         Int      @id @default(autoincrement())
+  product_id       Int      @unique
+  current_quantity Decimal  @default(0.0000) @db.Decimal(14, 4)
+  last_updated     DateTime @default(now()) @db.Timestamp(6)
+  products         products @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model stock_transactions {
+  transaction_id   Int      @id @default(autoincrement())
+  product_id       Int
+  transaction_type String   @db.VarChar(20)
+  quantity         Decimal  @db.Decimal(14, 4)
+  quantity_before  Decimal  @db.Decimal(14, 4)
+  quantity_after   Decimal  @db.Decimal(14, 4)
+  reference_type   String?  @db.VarChar(50)
+  reference_id     Int?
+  transaction_date DateTime @default(now()) @db.Timestamp(6)
+  notes            String?  @db.VarChar(500)
+  created_by       Int?
+  users            users?   @relation(fields: [created_by], references: [user_id])
+  products         products @relation(fields: [product_id], references: [product_id], onDelete: NoAction)
+
+  @@index([product_id], map: "idx_st_product")
+  @@index([reference_type, reference_id], map: "idx_st_reference")
+  @@index([transaction_date], map: "idx_st_transaction_date")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model suppliers {
+  supplier_id       Int                 @id @default(autoincrement())
+  supplier_code     String              @unique @db.VarChar(20)
+  supplier_name     String              @db.VarChar(150)
+  contact_person    String?             @db.VarChar(100)
+  phone             String?             @db.VarChar(20)
+  email             String?             @db.VarChar(100)
+  address           String?
+  city              String?             @db.VarChar(100)
+  province          String?             @db.VarChar(100)
+  postal_code       String?             @db.VarChar(10)
+  is_active         Boolean             @default(true)
+  created_at        DateTime            @default(now()) @db.Timestamp(6)
+  updated_at        DateTime            @default(now()) @db.Timestamp(6)
+  product_suppliers product_suppliers[]
+  purchase_orders   purchase_orders[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model units {
+  unit_id           Int        @id @default(autoincrement()) @db.SmallInt
+  unit_name         String     @unique @db.VarChar(50)
+  unit_abbreviation String     @unique @db.VarChar(10)
+  created_at        DateTime   @default(now()) @db.Timestamp(6)
+  products          products[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  user_id                                            Int                  @id @default(autoincrement())
+  username                                           String               @unique @db.VarChar(50)
+  password_hash                                      String               @db.VarChar(255)
+  full_name                                          String               @db.VarChar(100)
+  email                                              String               @unique @db.VarChar(100)
+  role                                               String               @default("staff_gudang") @db.VarChar(20)
+  is_active                                          Boolean              @default(true)
+  last_login                                         DateTime?            @db.Timestamp(6)
+  created_at                                         DateTime             @default(now()) @db.Timestamp(6)
+  updated_at                                         DateTime             @default(now()) @db.Timestamp(6)
+  demand_history                                     demand_history[]
+  eoq_calculations                                   eoq_calculations[]
+  eoq_parameters                                     eoq_parameters[]
+  purchase_orders_purchase_orders_approved_byTousers purchase_orders[]    @relation("purchase_orders_approved_byTousers")
+  purchase_orders_purchase_orders_created_byTousers  purchase_orders[]    @relation("purchase_orders_created_byTousers")
+  stock_transactions                                 stock_transactions[]
+}

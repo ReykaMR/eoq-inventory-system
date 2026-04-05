@@ -1,0 +1,1 @@
+// Generic table dengan sorting, pagination
