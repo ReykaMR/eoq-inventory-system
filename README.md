@@ -1,36 +1,164 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EOQ Inventory System
 
-## Getting Started
+Sistem Penentuan Pembelian Barang Dengan Metode **EOQ (Economic Order Quantity)**.
 
-First, run the development server:
+Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pembelian yang optimal menggunakan rumus EOQ standar: **Q\* = √(2DS/H)**
 
+## Fitur Utama
+
+### Perhitungan EOQ
+- **EOQ (Economic Order Quantity)**: Menghitung jumlah pesanan optimal untuk meminimalkan total biaya persediaan
+- **Reorder Point (ROP)**: Menentukan level stok di mana pesanan baru harus dilakukan
+- **Rekomendasi Otomatis**: Sistem mendeteksi stok di bawah ROP dan menyarankan jumlah EOQ
+
+### Manajemen Persediaan
+- **Stock Management**: Monitoring stok real-time dengan alert stok menipis
+- **Purchase Orders**: Buat PO dari rekomendasi EOQ dengan auto-fill
+- **Demand History**: Catat riwayat permintaan bulanan untuk analisis
+- **Produk & Kategori**: Kelola data produk dengan kategori dan satuan
+
+### Manajemen Data Master
+- **Supplier**: Kelola data pemasok dengan detail kontak
+- **Satuan**: Kelola satuan pengukuran (kg, liter, pcs, dll)
+- **Users**: Manajemen user dengan role-based access control
+
+### Dashboard
+- Ringkasan nilai stok, produk perlu reorder, PO pending
+- Grafik tren demand 12 bulan terakhir
+- Rekomendasi EOQ yang perlu segera dipesan
+- Transaksi stok dan PO terbaru
+
+## Teknologi
+
+| Kategori | Teknologi |
+|----------|-----------|
+| **Framework** | Next.js 16 (Turbopack) |
+| **Database** | PostgreSQL + Prisma ORM |
+| **Auth** | NextAuth.js (JWT) |
+| **Styling** | Tailwind CSS 4 + shadcn/ui |
+| **State** | TanStack React Query |
+| **Charts** | Recharts |
+
+## Role & Akses
+
+| Role | Akses |
+|------|-------|
+| **Admin** | Full access: semua fitur termasuk manajemen user |
+| **Manager** | EOQ, PO, stock, demand, profile, notifikasi |
+| **Staff Pembelian** | Produk, supplier, EOQ, PO, demand, profile, notifikasi |
+| **Staff Gudang** | Dashboard, stock, profile, notifikasi |
+
+## Instalasi
+
+### Prasyarat
+- Node.js 18+
+- PostgreSQL 14+
+- npm
+
+### Langkah Instalasi
+
+1. **Clone repository**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd eoq-inventory-system
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Install dependencies**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Setup environment**
+```bash
+cp .env.example .env
+```
+Edit `.env` dan sesuaikan:
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/eoq_inventory_system?schema=public
+NEXTAUTH_SECRET=generate-random-secret-key-here
+NEXTAUTH_URL=http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **Setup database**
+```bash
+npm run db:migrate    # Push schema ke database
+npm run db:setup      # Setup data awal (views, functions)
+npm run db:seed       # Seed data demo (users, produk, dll)
+```
 
-## Learn More
+5. **Jalankan development server**
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Buka [http://localhost:3000](http://localhost:3000) di browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Demo Accounts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `password123` |
+| Manager | `manager` | `password123` |
+| Staff Pembelian | `staff_beli` | `password123` |
+| Staff Gudang | `staff_gudang` | `password123` |
 
-## Deploy on Vercel
+## Database Schema
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Entitas utama:
+- `users` - Data pengguna dengan role-based access
+- `products` - Produk/barang dengan harga dan stok minimum
+- `categories` - Kategori produk
+- `units` - Satuan pengukuran
+- `suppliers` - Data pemasok
+- `stock` - Level stok per produk
+- `eoq_parameters` - Parameter EOQ (D, S, H) per produk
+- `eoq_calculations` - Hasil perhitungan EOQ
+- `purchase_orders` - Purchase orders dengan status workflow
+- `stock_transactions` - Riwayat transaksi stok (IN/OUT/ADJUSTMENT)
+- `demand_history` - Riwayat permintaan bulanan
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Rumus EOQ
+
+**Q\* = √(2DS/H)**
+
+Dimana:
+- **Q\*** = Economic Order Quantity (jumlah pesanan optimal)
+- **D** = Demand tahunan (unit/tahun)
+- **S** = Biaya pemesanan per order (Rp)
+- **H** = Biaya penyimpanan per unit per tahun (Rp)
+
+**Reorder Point (ROP) = d × L**
+
+Dimana:
+- **d** = Demand harian (D / hari kerja per tahun)
+- **L** = Lead time dalam hari
+
+## Scripts
+
+```bash
+npm run dev          # Development server
+npm run build        # Production build
+npm run start        # Production server
+npm run lint         # ESLint
+npm run db:migrate   # Push Prisma schema
+npm run db:setup     # Setup database views/functions
+npm run db:seed      # Seed demo data
+npm run db:reset     # Reset database + seed ulang
+```
+
+## Konfigurasi Tambahan
+
+### Production Deployment
+1. Set `NODE_ENV=production`
+2. Generate `NEXTAUTH_SECRET` yang kuat: `openssl rand -base64 32`
+3. Set `NEXTAUTH_URL` ke domain produksi
+4. Deploy ke Vercel, Railway, atau server sendiri
+
+### Backup Database
+```bash
+pg_dump -U postgres eoq_inventory_system > backup.sql
+```
+
+## Lisensi
+
+MIT License.

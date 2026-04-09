@@ -1,1 +1,0 @@
-<!-- Folder Layer API calls (fetch) -->
