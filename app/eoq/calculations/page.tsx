@@ -1,1 +1,0 @@
-// Histori perhitungan EOQ

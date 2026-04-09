@@ -142,7 +142,7 @@ model purchase_order_items {
   quantity_ordered  Decimal           @db.Decimal(14, 4)
   quantity_received Decimal           @default(0.0000) @db.Decimal(14, 4)
   unit_price        Decimal           @db.Decimal(15, 2)
-  subtotal          Decimal?          @default(dbgenerated("(quantity_ordered * unit_price)")) @db.Decimal(30, 2)
+  subtotal          Decimal?          @db.Decimal(30, 2)
   notes             String?           @db.VarChar(500)
   eoq_calculations  eoq_calculations? @relation(fields: [calculation_id], references: [calculation_id])
   purchase_orders   purchase_orders   @relation(fields: [po_id], references: [po_id], onDelete: Cascade)

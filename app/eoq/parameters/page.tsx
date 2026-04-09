@@ -1,1 +1,0 @@
-// Daftar parameter EOQ per produk
