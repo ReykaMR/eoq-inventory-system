@@ -33,10 +33,12 @@ import {
 } from "@/components/ui/select";
 import { Plus, Calculator, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 export default function EOQPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     product_id: "",
@@ -93,6 +95,10 @@ export default function EOQPage() {
       queryClient.invalidateQueries({ queryKey: ["eoq-calculations"] });
       setOpen(false);
       resetForm();
+      toast.success("Parameter EOQ berhasil ditambahkan dan dihitung");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal menambahkan parameter EOQ");
     },
   });
 
@@ -111,6 +117,10 @@ export default function EOQPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["eoq-calculations"] });
+      toast.success("EOQ berhasil dihitung ulang");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal menghitung ulang EOQ");
     },
   });
 

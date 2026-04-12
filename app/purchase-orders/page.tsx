@@ -54,10 +54,12 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useToast } from "@/components/toast";
 
 export default function PurchaseOrdersPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedPO, setSelectedPO] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -129,6 +131,10 @@ export default function PurchaseOrdersPage() {
       queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
       setShowCreateDialog(false);
       resetForm();
+      toast.success("Purchase Order berhasil dibuat");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal membuat Purchase Order");
     },
   });
 
@@ -145,8 +151,17 @@ export default function PurchaseOrdersPage() {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
+      const messages: Record<string, string> = {
+        submit: "PO berhasil diajukan",
+        approve: "PO berhasil disetujui",
+        receive: "PO berhasil diterima dan stok diperbarui",
+      };
+      toast.success(messages[variables.action] || "Status PO berhasil diperbarui");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal memperbarui status PO");
     },
   });
 

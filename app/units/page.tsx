@@ -1,3 +1,4 @@
+// CRUD satuan
 "use client";
 
 import { useState } from "react";
@@ -25,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 interface Unit {
   unit_id: number;
@@ -35,6 +37,7 @@ interface Unit {
 export default function UnitsPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [formData, setFormData] = useState({
@@ -70,11 +73,21 @@ export default function UnitsPage() {
       queryClient.invalidateQueries({ queryKey: ["units"] });
       setOpen(false);
       resetForm();
+      toast.success("Satuan berhasil ditambahkan");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal menambahkan satuan");
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: typeof formData }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: typeof formData;
+    }) => {
       const res = await fetch(`/api/units/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -91,6 +104,10 @@ export default function UnitsPage() {
       setOpen(false);
       setEditingUnit(null);
       resetForm();
+      toast.success("Satuan berhasil diperbarui");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal memperbarui satuan");
     },
   });
 
@@ -107,6 +124,10 @@ export default function UnitsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["units"] });
+      toast.success("Satuan berhasil dihapus");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal menghapus satuan");
     },
   });
 
@@ -125,6 +146,12 @@ export default function UnitsPage() {
       unit_abbreviation: unit.unit_abbreviation,
     });
     setOpen(true);
+  };
+
+  const handleDelete = (id: number, name: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus satuan "${name}"?`)) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -260,14 +287,14 @@ export default function UnitsPage() {
                   <TableRow>
                     <TableHead>Nama Satuan</TableHead>
                     <TableHead>Singkatan</TableHead>
-                    <TableHead>Aksi</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {units?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={3} className="text-center py-8">
-                        Belum ada satuan. Klik &quot;Tambah Satuan&quot; untuk menambahkan.
+                        Belum ada satuan. Klik "Tambah Satuan" untuk menambahkan.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -277,8 +304,8 @@ export default function UnitsPage() {
                           {unit.unit_name}
                         </TableCell>
                         <TableCell>{unit.unit_abbreviation}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
                             <Button
                               variant="outline"
                               size="sm"
@@ -290,7 +317,7 @@ export default function UnitsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                deleteMutation.mutate(unit.unit_id)
+                                handleDelete(unit.unit_id, unit.unit_name)
                               }
                               disabled={deleteMutation.isPending}
                             >

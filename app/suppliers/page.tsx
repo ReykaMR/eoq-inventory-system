@@ -33,6 +33,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 interface Supplier {
   supplier_id: number;
@@ -53,6 +54,7 @@ interface Supplier {
 export default function SuppliersPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [formData, setFormData] = useState({
@@ -96,6 +98,10 @@ export default function SuppliersPage() {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       setOpen(false);
       resetForm();
+      toast.success("Supplier berhasil ditambahkan");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menambahkan Supplier");
     },
   });
 
@@ -123,6 +129,10 @@ export default function SuppliersPage() {
       setOpen(false);
       setEditingSupplier(null);
       resetForm();
+      toast.success("Supplier berhasil diperbarui");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal memperbarui Supplier");
     },
   });
 
@@ -139,6 +149,10 @@ export default function SuppliersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+      toast.success("Supplier berhasil dihapus");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menghapus Supplier");
     },
   });
 
@@ -173,6 +187,12 @@ export default function SuppliersPage() {
       is_active: supplier.is_active,
     });
     setOpen(true);
+  };
+
+  const handleDelete = (id: number, name: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus Supplier "${name}"?`)) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -483,7 +503,10 @@ export default function SuppliersPage() {
                             variant="outline"
                             size="sm"
                             onClick={() =>
-                              deleteMutation.mutate(supplier.supplier_id)
+                              handleDelete(
+                                supplier.supplier_id,
+                                supplier.supplier_name,
+                              )
                             }
                             disabled={deleteMutation.isPending}
                           >

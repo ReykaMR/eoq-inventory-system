@@ -34,6 +34,7 @@ import {
   Package,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 interface Category {
   category_id: number;
@@ -48,6 +49,7 @@ interface Category {
 export default function CategoriesPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
@@ -85,6 +87,10 @@ export default function CategoriesPage() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       setOpen(false);
       resetForm();
+      toast.success("Kategori berhasil ditambahkan");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menambahkan Kategori");
     },
   });
 
@@ -112,6 +118,10 @@ export default function CategoriesPage() {
       setOpen(false);
       setEditingCategory(null);
       resetForm();
+      toast.success("Kategori berhasil diperbarui");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal memperbarui Kategori");
     },
   });
 
@@ -128,6 +138,10 @@ export default function CategoriesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Kategori berhasil dihapus");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menghapus Kategori");
     },
   });
 
@@ -150,6 +164,12 @@ export default function CategoriesPage() {
       is_active: category.is_active,
     });
     setOpen(true);
+  };
+
+  const handleDelete = (id: number, name: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus Kategori "${name}"?`)) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -383,7 +403,10 @@ export default function CategoriesPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                deleteMutation.mutate(category.category_id)
+                                handleDelete(
+                                  category.category_id,
+                                  category.category_name,
+                                )
                               }
                               disabled={deleteMutation.isPending}
                             >
