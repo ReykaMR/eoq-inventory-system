@@ -1,3 +1,4 @@
+// Stock management
 "use client";
 
 import { useState } from "react";
@@ -39,10 +40,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 export default function StockPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     product_id: "",
@@ -92,6 +95,10 @@ export default function StockPage() {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       setOpen(false);
       resetForm();
+      toast.success("Transaksi stok berhasil dicatat");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal mencatat transaksi stok");
     },
   });
 
@@ -144,7 +151,7 @@ export default function StockPage() {
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button>
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Catat Transaksi
               </Button>
             </DialogTrigger>
@@ -322,9 +329,7 @@ export default function StockPage() {
                           <div className="flex items-center gap-2">
                             <Package className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium">
-                              {parseFloat(item.current_quantity).toLocaleString(
-                                "id-ID",
-                              )}
+                              {parseFloat(item.current_quantity).toLocaleString("id-ID")}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {item.products?.units?.unit_abbreviation ?? ""}
@@ -332,17 +337,13 @@ export default function StockPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {parseFloat(
-                            item.products?.min_stock ?? 0,
-                          ).toLocaleString("id-ID")}
+                          {parseFloat(item.products?.min_stock ?? 0).toLocaleString("id-ID")}
                         </TableCell>
                         <TableCell>
                           <Badge variant={status.variant}>{status.label}</Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(item.last_updated).toLocaleDateString(
-                            "id-ID",
-                          )}
+                          {new Date(item.last_updated).toLocaleDateString("id-ID")}
                         </TableCell>
                       </TableRow>
                     );

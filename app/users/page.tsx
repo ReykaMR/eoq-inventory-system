@@ -40,6 +40,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 interface User {
   user_id: number;
@@ -61,6 +62,7 @@ const roleOptions = [
 export default function UsersPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
@@ -100,6 +102,10 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setOpen(false);
       resetForm();
+      toast.success("User berhasil ditambahkan");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menambahkan User");
     },
   });
 
@@ -127,6 +133,10 @@ export default function UsersPage() {
       setOpen(false);
       setEditingUser(null);
       resetForm();
+      toast.success("User berhasil diperbarui");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal memperbarui User");
     },
   });
 
@@ -143,6 +153,10 @@ export default function UsersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User berhasil dihapus");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menghapus User");
     },
   });
 
@@ -169,6 +183,12 @@ export default function UsersPage() {
       is_active: user.is_active,
     });
     setOpen(true);
+  };
+
+  const handleDelete = (id: number, name: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus User "${name}"?`)) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -444,7 +464,7 @@ export default function UsersPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                deleteMutation.mutate(user.user_id)
+                                handleDelete(user.user_id, user.full_name)
                               }
                               disabled={deleteMutation.isPending}
                             >

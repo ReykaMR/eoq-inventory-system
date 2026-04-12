@@ -41,10 +41,12 @@ import {
   Package,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 export default function ProductsPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -114,6 +116,10 @@ export default function ProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       setOpen(false);
       resetForm();
+      toast.success("Produk berhasil ditambahkan");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menambahkan Produk");
     },
   });
 
@@ -149,6 +155,10 @@ export default function ProductsPage() {
       setOpen(false);
       setEditingProduct(null);
       resetForm();
+      toast.success("Produk berhasil diperbarui");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal memperbarui Produk");
     },
   });
 
@@ -165,6 +175,10 @@ export default function ProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Produk berhasil dihapus");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menghapus Produk");
     },
   });
 
@@ -199,6 +213,12 @@ export default function ProductsPage() {
       is_active: product.is_active,
     });
     setOpen(true);
+  };
+
+  const handleDelete = (id: number, name: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus Produk "${name}"?`)) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -585,7 +605,10 @@ export default function ProductsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                deleteMutation.mutate(product.product_id)
+                                handleDelete(
+                                  product.product_id,
+                                  product.product_name,
+                                )
                               }
                               disabled={deleteMutation.isPending}
                               className="hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95"

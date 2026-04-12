@@ -1,3 +1,4 @@
+// Demand history management
 "use client";
 
 import { useState } from "react";
@@ -32,10 +33,12 @@ import {
 } from "@/components/ui/select";
 import { Plus, Loader2, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 export default function DemandHistoryPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     product_id: "",
@@ -88,6 +91,10 @@ export default function DemandHistoryPage() {
       queryClient.invalidateQueries({ queryKey: ["demand-history"] });
       setOpen(false);
       resetForm();
+      toast.success("Demand history berhasil ditambahkan");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal menambahkan demand history");
     },
   });
 
@@ -148,7 +155,7 @@ export default function DemandHistoryPage() {
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="h-4 w-4" />
+                <Plus className="mr-2 h-4 w-4" />
                 Tambah Data Demand
               </Button>
             </DialogTrigger>
@@ -307,8 +314,7 @@ export default function DemandHistoryPage() {
                 {demandHistory?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8">
-                      Belum ada data demand. Klik &quot;Tambah Data Demand&quot;
-                      untuk menambahkan.
+                      Belum ada data demand. Klik "Tambah Data Demand" untuk menambahkan.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -328,8 +334,7 @@ export default function DemandHistoryPage() {
                         <div className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-muted-foreground" />
                           <span>
-                            {demand.period_month >= 1 &&
-                            demand.period_month <= 12
+                            {demand.period_month >= 1 && demand.period_month <= 12
                               ? monthNames[demand.period_month - 1]
                               : "Unknown"}{" "}
                             {demand.period_year}

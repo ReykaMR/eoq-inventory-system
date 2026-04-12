@@ -23,6 +23,7 @@ import {
   Trash2,
   Clock,
 } from "lucide-react";
+import { useToast } from "@/components/toast";
 
 interface Notification {
   id: number;
@@ -48,6 +49,7 @@ const typeColors = {
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const { data: notifications, isLoading } = useQuery({
@@ -84,6 +86,7 @@ export default function NotificationsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      toast.success("Semua notifikasi ditandai sebagai sudah dibaca");
     },
   });
 
@@ -97,8 +100,15 @@ export default function NotificationsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      toast.success("Notifikasi berhasil dihapus");
     },
   });
+
+  const handleDeleteNotification = (id: number) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus notifikasi ini?")) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const filteredNotifications = notifications?.filter(
     (n: Notification) => filter === "all" || !n.is_read
@@ -243,7 +253,7 @@ export default function NotificationsPage() {
                                 size="sm"
                                 className="h-6 px-2 text-xs text-destructive hover:text-destructive"
                                 onClick={() =>
-                                  deleteMutation.mutate(notif.id)
+                                  handleDeleteNotification(notif.id)
                                 }
                               >
                                 <Trash2 className="h-3 w-3" />
