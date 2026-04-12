@@ -141,18 +141,24 @@ async function calculateEOQ(parameterId: number) {
   // Save EOQ calculation
   await prisma.eoq_calculations.create({
     data: {
-      parameter_id: parameterId,
-      product_id: param.product_id,
-      eoq_quantity: eoqResult.eoq_quantity,
-      reorder_point: eoqResult.reorder_point,
-      safety_stock: eoqResult.safety_stock,
-      total_inventory_cost: eoqResult.total_inventory_cost,
-      orders_per_year: eoqResult.orders_per_year,
-      order_interval_days: eoqResult.order_interval_days,
-      total_ordering_cost: eoqResult.total_ordering_cost,
-      total_holding_cost: eoqResult.total_holding_cost,
+      eoq_parameters: {
+        connect: { parameter_id: parameterId },
+      },
+      products: {
+        connect: { product_id: param.product_id },
+      },
+      eoq_quantity: Number(eoqResult.eoq_quantity) || 0,
+      reorder_point: Number(eoqResult.reorder_point) || 0,
+      safety_stock: Number(eoqResult.safety_stock) || 0,
+      total_inventory_cost: Number(eoqResult.total_inventory_cost) || 0,
+      orders_per_year: Number(eoqResult.orders_per_year) || 0,
+      order_interval_days: Number(eoqResult.order_interval_days) || 0,
+      total_ordering_cost: Number(eoqResult.total_ordering_cost) || 0,
+      total_holding_cost: Number(eoqResult.total_holding_cost) || 0,
       lead_time_days: param.products.product_suppliers[0]?.lead_time_days || 0,
-      calculated_by: param.created_by,
+      users: {
+        connect: { user_id: param.created_by },
+      },
     },
   });
 
