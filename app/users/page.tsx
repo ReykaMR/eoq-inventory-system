@@ -405,6 +405,9 @@ export default function UsersPage() {
                       Email
                     </TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      Terakhir Login
+                    </TableHead>
                     <TableHead className="hidden md:table-cell">
                       Status
                     </TableHead>
@@ -414,7 +417,7 @@ export default function UsersPage() {
                 <TableBody>
                   {users?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
+                      <TableCell colSpan={7} className="text-center py-8">
                         Belum ada user. Klik &quot;Tambah User&quot; untuk
                         menambahkan.
                       </TableCell>
@@ -433,6 +436,17 @@ export default function UsersPage() {
                           <Badge variant="outline">
                             {formatRole(user.role)}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {user.last_login
+                            ? new Date(user.last_login).toLocaleString("id-ID", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "Belum pernah"}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <Badge

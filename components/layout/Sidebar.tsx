@@ -18,6 +18,7 @@ import {
   Bell,
   User,
   X,
+  FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -71,10 +72,22 @@ const menuItems = [
     roles: ["admin", "manager", "staff_gudang"],
   },
   {
+    title: "Riwayat Stok",
+    href: "/stock-transactions",
+    icon: FileText,
+    roles: ["admin", "manager", "staff_gudang"],
+  },
+  {
     title: "Demand History",
     href: "/demand-history",
     icon: TrendingUp,
     roles: ["admin", "manager", "staff_pembelian"],
+  },
+  {
+    title: "Hasil EOQ",
+    href: "/eoq-calculations",
+    icon: Calculator,
+    roles: ["admin", "manager"],
   },
   {
     title: "Users",
@@ -170,7 +183,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           <nav className="flex-1 overflow-y-auto p-4 space-y-1.5">
             {filteredMenu.map((item, index) => {
               const Icon = item.icon;
-              const isActive = pathname?.startsWith(item.href);
+              const isActive =
+                pathname === item.href || pathname?.startsWith(item.href + "/");
 
               return (
                 <Link
