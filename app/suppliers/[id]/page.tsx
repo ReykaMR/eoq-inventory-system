@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, ArrowLeft, CheckCircle, XCircle, Clock, DollarSign, Package, Star } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -147,6 +147,82 @@ export default function SupplierDetailPage() {
                 </>
               )}
             </Badge>
+          </CardContent>
+        </Card>
+
+        {/* Products Supplied */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Produk yang Disuplai</CardTitle>
+            <CardDescription>
+              {supplier.product_suppliers?.length || 0} produk
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {supplier.product_suppliers?.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Belum ada produk yang disuplai
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {supplier.product_suppliers?.map((ps: any) => (
+                  <div
+                    key={ps.product_supplier_id}
+                    className="flex items-center justify-between p-4 rounded-lg border"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary/10 p-2 rounded-lg">
+                        <Package className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">
+                            {ps.products?.product_name}
+                          </p>
+                          {ps.is_primary && (
+                            <Badge
+                              variant="default"
+                              className="gap-1 text-xs bg-yellow-500/20 text-yellow-700 border-yellow-500/30"
+                            >
+                              <Star className="h-3 w-3" />
+                              Utama
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {ps.products?.product_code}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3 text-muted-foreground" />
+                          <span>
+                            {ps.supplier_price
+                              ? new Intl.NumberFormat("id-ID", {
+                                  style: "currency",
+                                  currency: "IDR",
+                                  minimumFractionDigits: 0,
+                                }).format(Number(ps.supplier_price))
+                              : "-"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <span>{ps.lead_time_days} hari</span>
+                        </div>
+                        <div className="text-muted-foreground">
+                          Min:{" "}
+                          {parseFloat(ps.min_order_qty).toLocaleString("id-ID")}{" "}
+                          {ps.products?.units?.unit_abbreviation || ""}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

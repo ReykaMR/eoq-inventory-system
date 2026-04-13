@@ -715,7 +715,7 @@ export default function PurchaseOrdersPage() {
 
         {/* PO Detail Dialog */}
         <Dialog open={!!selectedPO} onOpenChange={() => setSelectedPO(null)}>
-          <DialogContent className="sm:max-w-150">
+          <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
             {selectedPO && (
               <>
                 <DialogHeader>
@@ -725,6 +725,7 @@ export default function PurchaseOrdersPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
+                  {/* PO Info */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Supplier</p>
@@ -742,20 +743,87 @@ export default function PurchaseOrdersPage() {
                         )}
                       </p>
                     </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Estimasi Tiba
+                      </p>
+                      <p className="font-medium">
+                        {selectedPO.expected_delivery_date
+                          ? new Date(
+                              selectedPO.expected_delivery_date,
+                            ).toLocaleDateString("id-ID")
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Aktual Tiba
+                      </p>
+                      <p className="font-medium">
+                        {selectedPO.actual_delivery_date
+                          ? new Date(
+                              selectedPO.actual_delivery_date,
+                            ).toLocaleDateString("id-ID")
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Disetujui</p>
+                      <p className="font-medium">
+                        {selectedPO.users_purchase_orders_approved_byTousers
+                          ?.full_name || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Tanggal Setuju
+                      </p>
+                      <p className="font-medium">
+                        {selectedPO.approved_at
+                          ? new Date(
+                              selectedPO.approved_at,
+                            ).toLocaleDateString("id-ID")
+                          : "-"}
+                      </p>
+                    </div>
                   </div>
 
+                  {selectedPO.notes && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Catatan PO</p>
+                      <p className="font-medium">{selectedPO.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Items */}
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Items</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Item ({selectedPO.purchase_order_items?.length || 0})
+                    </p>
                     <div className="space-y-2">
                       {selectedPO.purchase_order_items?.map(
                         (item: any, index: number) => (
                           <div key={index} className="p-3 border rounded-lg">
-                            <p className="font-medium">
-                              {item.products?.product_name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Qty: {item.quantity_ordered} x{" "}
-                              {formatCurrency(item.unit_price)} ={" "}
+                            <div className="flex justify-between items-start">
+                              <p className="font-medium">
+                                {item.products?.product_name}
+                              </p>
+                              <span className="text-xs text-muted-foreground">
+                                Diterima:{" "}
+                                {parseFloat(
+                                  item.quantity_received || 0,
+                                ).toLocaleString("id-ID")}{" "}
+                                /{" "}
+                                {parseFloat(
+                                  item.quantity_ordered,
+                                ).toLocaleString("id-ID")}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {parseFloat(item.quantity_ordered).toLocaleString(
+                                "id-ID",
+                              )}{" "}
+                              x {formatCurrency(item.unit_price)} ={" "}
                               {formatCurrency(
                                 Number(item.quantity_ordered) *
                                   Number(item.unit_price),

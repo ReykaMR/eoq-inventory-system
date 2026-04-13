@@ -16,6 +16,21 @@ export async function GET(
     const { id } = await params;
     const supplier = await prisma.suppliers.findUnique({
       where: { supplier_id: parseInt(id) },
+      include: {
+        product_suppliers: {
+          include: {
+            products: {
+              select: {
+                product_id: true,
+                product_code: true,
+                product_name: true,
+                units: { select: { unit_abbreviation: true } },
+              },
+            },
+          },
+          orderBy: { is_primary: "desc" },
+        },
+      },
     });
 
     if (!supplier) {

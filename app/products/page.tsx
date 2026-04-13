@@ -526,6 +526,12 @@ export default function ProductsPage() {
                     <TableHead className="hidden lg:table-cell">
                       Harga Beli
                     </TableHead>
+                    <TableHead className="hidden xl:table-cell">
+                      Harga Jual
+                    </TableHead>
+                    <TableHead className="hidden 2xl:table-cell">
+                      Stok Maks
+                    </TableHead>
                     <TableHead>Stok</TableHead>
                     <TableHead className="hidden sm:table-cell">
                       Status
@@ -536,7 +542,7 @@ export default function ProductsPage() {
                 <TableBody>
                   {products?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-16">
+                      <TableCell colSpan={10} className="text-center py-16">
                         <div className="flex flex-col items-center gap-3">
                           <div className="bg-muted p-4 rounded-full">
                             <Package className="h-8 w-8 text-muted-foreground" />
@@ -568,6 +574,16 @@ export default function ProductsPage() {
                           {parseInt(product.purchase_price).toLocaleString(
                             "id-ID",
                           )}
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          {product.selling_price
+                            ? `Rp ${parseInt(product.selling_price).toLocaleString("id-ID")}`
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="hidden 2xl:table-cell">
+                          {product.max_stock
+                            ? parseFloat(product.max_stock).toLocaleString("id-ID")
+                            : "-"}
                         </TableCell>
                         <TableCell>
                           {product.stock?.current_quantity || 0}
