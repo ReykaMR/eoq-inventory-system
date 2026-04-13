@@ -22,6 +22,10 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 - **Satuan**: Kelola satuan pengukuran (kg, liter, pcs, dll)
 - **Users**: Manajemen user dengan role-based access control
 
+### Notifikasi & Profil
+- **Notifikasi**: Peringatan stok menipis, PO pending, transaksi terbaru
+- **Profil**: Lihat dan edit informasi akun pengguna
+
 ### Dashboard
 - Ringkasan nilai stok, produk perlu reorder, PO pending
 - Grafik tren demand 12 bulan terakhir
@@ -59,7 +63,7 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 
 1. **Clone repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/ReykaMR/eoq-inventory-system.git
 cd eoq-inventory-system
 ```
 
@@ -116,6 +120,7 @@ Entitas utama:
 - `purchase_orders` - Purchase orders dengan status workflow
 - `stock_transactions` - Riwayat transaksi stok (IN/OUT/ADJUSTMENT)
 - `demand_history` - Riwayat permintaan bulanan
+- `notifications` - Notifikasi sistem per pengguna
 
 ## Rumus EOQ
 
@@ -144,6 +149,7 @@ npm run db:migrate   # Push Prisma schema
 npm run db:setup     # Setup database views/functions
 npm run db:seed      # Seed demo data
 npm run db:reset     # Reset database + seed ulang
+npm run db:truncate  # Kosongkan semua tabel, reset ID ke 1
 ```
 
 ## Konfigurasi Tambahan
