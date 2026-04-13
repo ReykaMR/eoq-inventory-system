@@ -51,6 +51,7 @@ import {
   Eye,
   Send,
   Check,
+  Trash2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -204,6 +205,32 @@ export default function PurchaseOrdersPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validate
+    if (!formData.supplier_id) {
+      setError("Supplier harus dipilih");
+      return;
+    }
+    if (formData.items.length === 0) {
+      setError("Tambahkan minimal 1 item pada PO");
+      return;
+    }
+    for (let i = 0; i < formData.items.length; i++) {
+      const item = formData.items[i];
+      if (!item.product_id) {
+        setError(`Item #${i + 1}: Produk harus dipilih`);
+        return;
+      }
+      if (!item.quantity_ordered || parseFloat(item.quantity_ordered) <= 0) {
+        setError(`Item #${i + 1}: Quantity harus lebih dari 0`);
+        return;
+      }
+      if (!item.unit_price || parseFloat(item.unit_price) <= 0) {
+        setError(`Item #${i + 1}: Harga satuan harus lebih dari 0`);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -519,13 +546,96 @@ export default function PurchaseOrdersPage() {
 
                 {/* Items */}
                 <div className="space-y-2">
-                  <Label>Item PO</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Item PO</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          items: [
+                            ...formData.items,
+                            {
+                              product_id: "",
+                              product_name: "",
+                              quantity_ordered: "",
+                              unit_price: "",
+                              notes: "",
+                            },
+                          ],
+                        })
+                      }
+                    >
+                      <Plus className="mr-1 h-3 w-3" />
+                      Tambah Item
+                    </Button>
+                  </div>
+
+                  {formData.items.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Belum ada item. Klik "Tambah Item" atau buat dari
+                      rekomendasi EOQ.
+                    </p>
+                  )}
+
                   {formData.items.map((item, index) => (
                     <div
                       key={index}
                       className="p-3 border rounded-lg space-y-2"
                     >
-                      <p className="text-sm font-medium">{item.product_name}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">
+                          Item #{index + 1}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newItems = formData.items.filter(
+                              (_, i) => i !== index,
+                            );
+                            setFormData({ ...formData, items: newItems });
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
+
+                      <Select
+                        value={item.product_id}
+                        onValueChange={(value) => {
+                          const product = products?.find(
+                            (p: any) => p.product_id.toString() === value,
+                          );
+                          const newItems = [...formData.items];
+                          newItems[index] = {
+                            ...newItems[index],
+                            product_id: value,
+                            product_name: product?.product_name || "",
+                          };
+                          setFormData({ ...formData, items: newItems });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih produk" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {products
+                            ?.filter((p: any) => p.is_active)
+                            .map((product: any) => (
+                              <SelectItem
+                                key={product.product_id}
+                                value={product.product_id.toString()}
+                              >
+                                {product.product_code} - {product.product_name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <Label className="text-xs">Quantity</Label>
@@ -537,6 +647,7 @@ export default function PurchaseOrdersPage() {
                               newItems[index].quantity_ordered = e.target.value;
                               setFormData({ ...formData, items: newItems });
                             }}
+                            placeholder="0"
                             disabled={isSubmitting}
                           />
                         </div>
@@ -550,13 +661,21 @@ export default function PurchaseOrdersPage() {
                               newItems[index].unit_price = e.target.value;
                               setFormData({ ...formData, items: newItems });
                             }}
+                            placeholder="0"
                             disabled={isSubmitting}
                           />
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {item.notes}
-                      </p>
+                      <Input
+                        value={item.notes}
+                        onChange={(e) => {
+                          const newItems = [...formData.items];
+                          newItems[index].notes = e.target.value;
+                          setFormData({ ...formData, items: newItems });
+                        }}
+                        placeholder="Catatan item (opsional)"
+                        disabled={isSubmitting}
+                      />
                     </div>
                   ))}
                 </div>
