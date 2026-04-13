@@ -26,13 +26,14 @@ import {
 import { useToast } from "@/components/toast";
 
 interface Notification {
-  id: number;
+  notification_id: number;
+  user_id: number | null;
   title: string;
   message: string;
   type: "warning" | "info" | "success";
   is_read: boolean;
+  link: string | null;
   created_at: string;
-  link?: string;
 }
 
 const typeIcons = {
@@ -95,18 +96,29 @@ export default function NotificationsPage() {
       const res = await fetch(`/api/notifications/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to delete notification");
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to delete notification");
+      }
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["notifications"] });
       toast.success("Notifikasi berhasil dihapus");
+    },
+    onError: (err: any) => {
+      console.error("[UI DELETE ERROR]", err);
+      toast.error(err.message || "Gagal menghapus notifikasi");
     },
   });
 
-  const handleDeleteNotification = (id: number) => {
+  const handleDeleteNotification = async (id: number) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus notifikasi ini?")) {
-      deleteMutation.mutate(id);
+      try {
+        await deleteMutation.mutateAsync(id);
+      } catch (err) {
+        // Error sudah di-handle di onError
+      }
     }
   };
 
@@ -197,7 +209,7 @@ export default function NotificationsPage() {
                     const Icon = typeIcons[notif.type];
                     return (
                       <div
-                        key={notif.id}
+                        key={notif.notification_id}
                         className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
                           !notif.is_read
                             ? "bg-accent/50 border-primary/20"
@@ -241,7 +253,7 @@ export default function NotificationsPage() {
                                   size="sm"
                                   className="h-6 px-2 text-xs"
                                   onClick={() =>
-                                    markAsReadMutation.mutate(notif.id)
+                                    markAsReadMutation.mutate(notif.notification_id)
                                   }
                                 >
                                   <Check className="mr-1 h-3 w-3" />
@@ -253,7 +265,7 @@ export default function NotificationsPage() {
                                 size="sm"
                                 className="h-6 px-2 text-xs text-destructive hover:text-destructive"
                                 onClick={() =>
-                                  handleDeleteNotification(notif.id)
+                                  handleDeleteNotification(notif.notification_id)
                                 }
                               >
                                 <Trash2 className="h-3 w-3" />

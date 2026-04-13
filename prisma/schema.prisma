@@ -257,4 +257,21 @@ model users {
   purchase_orders_purchase_orders_approved_byTousers purchase_orders[]    @relation("purchase_orders_approved_byTousers")
   purchase_orders_purchase_orders_created_byTousers  purchase_orders[]    @relation("purchase_orders_created_byTousers")
   stock_transactions                                 stock_transactions[]
+  notifications                                      notifications[]
+}
+
+model notifications {
+  notification_id Int       @id @default(autoincrement())
+  user_id         Int?
+  title           String    @db.VarChar(200)
+  message         String    @db.VarChar(500)
+  type            String    @default("info") @db.VarChar(20)
+  is_read         Boolean   @default(false)
+  link            String?   @db.VarChar(255)
+  created_at      DateTime  @default(now()) @db.Timestamp(6)
+  users           users?    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@index([user_id], map: "idx_notif_user")
+  @@index([is_read], map: "idx_notif_read")
+  @@index([created_at], map: "idx_notif_date")
 }

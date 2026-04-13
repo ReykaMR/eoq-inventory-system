@@ -25,8 +25,6 @@ import {
   DollarSign,
   Loader2,
   TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
   Clock,
   CheckCircle2,
 } from "lucide-react";
@@ -122,8 +120,6 @@ export default function DashboardPage() {
       icon: DollarSign,
       color: "from-blue-500 to-blue-600",
       bgColor: "bg-blue-500/10",
-      trend: "+12.5%",
-      trendUp: true,
     },
     {
       title: "Perlu Pesan",
@@ -132,8 +128,6 @@ export default function DashboardPage() {
       icon: AlertTriangle,
       color: "from-orange-500 to-orange-600",
       bgColor: "bg-orange-500/10",
-      trend: "-2.3%",
-      trendUp: false,
     },
     {
       title: "PO Pending",
@@ -142,8 +136,6 @@ export default function DashboardPage() {
       icon: ShoppingCart,
       color: "from-purple-500 to-purple-600",
       bgColor: "bg-purple-500/10",
-      trend: "+8.1%",
-      trendUp: true,
     },
     {
       title: "Butuh Persetujuan",
@@ -152,8 +144,6 @@ export default function DashboardPage() {
       icon: Clock,
       color: "from-amber-500 to-amber-600",
       bgColor: "bg-amber-500/10",
-      trend: "-5.2%",
-      trendUp: false,
     },
   ];
 
@@ -208,21 +198,9 @@ export default function DashboardPage() {
                       <div className="text-2xl font-bold mb-1">
                         {stat.value}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-muted-foreground">
-                          {stat.description}
-                        </p>
-                        <div
-                          className={`flex items-center gap-1 text-xs font-medium ${stat.trendUp ? "text-green-600" : "text-red-600"}`}
-                        >
-                          {stat.trendUp ? (
-                            <ArrowUpRight className="h-3 w-3" />
-                          ) : (
-                            <ArrowDownRight className="h-3 w-3" />
-                          )}
-                          {stat.trend}
-                        </div>
-                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {stat.description}
+                      </p>
                     </CardContent>
                     {/* Gradient overlay */}
                     <div className={`h-1 bg-linear-to-r ${stat.color}`} />
