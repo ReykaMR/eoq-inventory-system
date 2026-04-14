@@ -256,8 +256,8 @@ export default function ProductsPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Produk">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Manajemen Produk
@@ -268,7 +268,7 @@ export default function ProductsPage() {
           </div>
           <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-              <Button className="">
+              <Button>
                 <Plus className="h-4 w-4" />
                 Tambah Produk
               </Button>
@@ -493,7 +493,7 @@ export default function ProductsPage() {
                     Batal
                   </Button>
                   <Button type="submit" disabled={isSubmitting} className="">
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4" />}
+                    {isSubmitting && <Loader2 className="h-4 w-4" />}
                     {editingProduct ? "Perbarui" : "Simpan"}
                   </Button>
                 </DialogFooter>
@@ -511,7 +511,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           <div className="border rounded-xl overflow-hidden shadow-lg">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto w-full max-w-full">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -582,7 +582,9 @@ export default function ProductsPage() {
                         </TableCell>
                         <TableCell className="hidden 2xl:table-cell">
                           {product.max_stock
-                            ? parseFloat(product.max_stock).toLocaleString("id-ID")
+                            ? parseFloat(product.max_stock).toLocaleString(
+                                "id-ID",
+                              )
                             : "-"}
                         </TableCell>
                         <TableCell>

@@ -89,7 +89,7 @@ export default function ProfilePage() {
 
   return (
     <AppLayout pageTitle="Profil Saya">
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
         <div>
           <h1 className="text-2xl font-bold">Profil Saya</h1>
           <p className="text-muted-foreground mt-1">
@@ -104,9 +104,7 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Informasi Profil</CardTitle>
-                  <CardDescription>
-                    Data pribadi akun Anda
-                  </CardDescription>
+                  <CardDescription>Data pribadi akun Anda</CardDescription>
                 </div>
                 {!isEditing && (
                   <Button
@@ -114,7 +112,7 @@ export default function ProfilePage() {
                     size="sm"
                     onClick={() => setIsEditing(true)}
                   >
-                    <Pencil className="mr-2 h-4 w-4" />
+                    <Pencil className="h-4 w-4" />
                     Edit
                   </Button>
                 )}
@@ -176,7 +174,7 @@ export default function ProfilePage() {
                 <div className="flex gap-2 pt-2">
                   <Button onClick={handleSave} disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     Simpan
                   </Button>

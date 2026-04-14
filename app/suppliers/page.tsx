@@ -190,7 +190,9 @@ export default function SuppliersPage() {
   };
 
   const handleDelete = (id: number, name: string) => {
-    if (window.confirm(`Apakah Anda yakin ingin menghapus Supplier "${name}"?`)) {
+    if (
+      window.confirm(`Apakah Anda yakin ingin menghapus Supplier "${name}"?`)
+    ) {
       deleteMutation.mutate(id);
     }
   };
@@ -230,10 +232,12 @@ export default function SuppliersPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Supplier">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Manajemen Supplier</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Manajemen Supplier
+            </h1>
             <p className="text-muted-foreground mt-1">
               Kelola data supplier untuk sistem EOQ
             </p>
@@ -423,7 +427,7 @@ export default function SuppliersPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     {editingSupplier ? "Perbarui" : "Simpan"}
                   </Button>
@@ -438,87 +442,91 @@ export default function SuppliersPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Kode</TableHead>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Kontak</TableHead>
-                  <TableHead>Telepon</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Kota</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {suppliers?.length === 0 ? (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto w-full max-w-full">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      Belum ada supplier. Klik &quot;Tambah Supplier&quot; untuk
-                      menambahkan.
-                    </TableCell>
+                    <TableHead>Kode</TableHead>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>Kontak</TableHead>
+                    <TableHead>Telepon</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Kota</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Aksi</TableHead>
                   </TableRow>
-                ) : (
-                  suppliers?.map((supplier: Supplier) => (
-                    <TableRow key={supplier.supplier_id}>
-                      <TableCell className="font-medium">
-                        {supplier.supplier_code}
-                      </TableCell>
-                      <TableCell>{supplier.supplier_name}</TableCell>
-                      <TableCell>{supplier.contact_person || "-"}</TableCell>
-                      <TableCell>{supplier.phone || "-"}</TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {supplier.email || "-"}
-                      </TableCell>
-                      <TableCell>{supplier.city || "-"}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={supplier.is_active ? "default" : "secondary"}
-                        >
-                          {supplier.is_active ? (
-                            <>
-                              <CheckCircle className="h-3 w-3" />
-                              Aktif
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-3 w-3" />
-                              Nonaktif
-                            </>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(supplier)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleDelete(
-                                supplier.supplier_id,
-                                supplier.supplier_name,
-                              )
-                            }
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {suppliers?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8">
+                        Belum ada supplier. Klik &quot;Tambah Supplier&quot;
+                        untuk menambahkan.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    suppliers?.map((supplier: Supplier) => (
+                      <TableRow key={supplier.supplier_id}>
+                        <TableCell className="font-medium">
+                          {supplier.supplier_code}
+                        </TableCell>
+                        <TableCell>{supplier.supplier_name}</TableCell>
+                        <TableCell>{supplier.contact_person || "-"}</TableCell>
+                        <TableCell>{supplier.phone || "-"}</TableCell>
+                        <TableCell className="max-w-xs truncate">
+                          {supplier.email || "-"}
+                        </TableCell>
+                        <TableCell>{supplier.city || "-"}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              supplier.is_active ? "default" : "secondary"
+                            }
+                          >
+                            {supplier.is_active ? (
+                              <>
+                                <CheckCircle className="h-3 w-3" />
+                                Aktif
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="h-3 w-3" />
+                                Nonaktif
+                              </>
+                            )}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(supplier)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleDelete(
+                                  supplier.supplier_id,
+                                  supplier.supplier_name,
+                                )
+                              }
+                              disabled={deleteMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

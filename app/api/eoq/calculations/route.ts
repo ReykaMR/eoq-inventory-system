@@ -1,4 +1,3 @@
-// EOQ calculations API
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching EOQ calculations:", error);
     return NextResponse.json(
       { error: "Failed to fetch EOQ calculations" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

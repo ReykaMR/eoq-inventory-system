@@ -159,7 +159,9 @@ export default function PurchaseOrdersPage() {
         approve: "PO berhasil disetujui",
         receive: "PO berhasil diterima dan stok diperbarui",
       };
-      toast.success(messages[variables.action] || "Status PO berhasil diperbarui");
+      toast.success(
+        messages[variables.action] || "Status PO berhasil diperbarui",
+      );
     },
     onError: (err: any) => {
       toast.error(err.message || "Gagal memperbarui status PO");
@@ -368,7 +370,7 @@ export default function PurchaseOrdersPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto w-full max-w-full">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -586,9 +588,7 @@ export default function PurchaseOrdersPage() {
                       className="p-3 border rounded-lg space-y-2"
                     >
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">
-                          Item #{index + 1}
-                        </p>
+                        <p className="text-sm font-medium">Item #{index + 1}</p>
                         <Button
                           type="button"
                           variant="ghost"
@@ -703,9 +703,7 @@ export default function PurchaseOrdersPage() {
                   <div>Batal</div>
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   <div>Buat PO</div>
                 </Button>
               </DialogFooter>
@@ -780,9 +778,9 @@ export default function PurchaseOrdersPage() {
                       </p>
                       <p className="font-medium">
                         {selectedPO.approved_at
-                          ? new Date(
-                              selectedPO.approved_at,
-                            ).toLocaleDateString("id-ID")
+                          ? new Date(selectedPO.approved_at).toLocaleDateString(
+                              "id-ID",
+                            )
                           : "-"}
                       </p>
                     </div>
@@ -790,7 +788,9 @@ export default function PurchaseOrdersPage() {
 
                   {selectedPO.notes && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Catatan PO</p>
+                      <p className="text-sm text-muted-foreground">
+                        Catatan PO
+                      </p>
                       <p className="font-medium">{selectedPO.notes}</p>
                     </div>
                   )}
