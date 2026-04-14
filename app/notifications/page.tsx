@@ -218,7 +218,7 @@ export default function NotificationsPage() {
                         }`}
                       >
                         <div
-                          className={`flex-shrink-0 rounded-full p-2 ${typeColors[notif.type]}`}
+                          className={`shrink-0 rounded-full p-2 ${typeColors[notif.type]}`}
                         >
                           <Icon className="h-5 w-5" />
                         </div>
@@ -231,7 +231,7 @@ export default function NotificationsPage() {
                                 {notif.message}
                               </p>
                             </div>
-                            <div className="flex items-center gap-1 flex-shrink-0">
+                            <div className="flex items-center gap-1 shrink-0">
                               {!notif.is_read && (
                                 <Badge variant="default" className="text-xs">
                                   Baru

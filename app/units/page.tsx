@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/toast";
+import { DataTable } from "@/components/common/DataTable";
 
 interface Unit {
   unit_id: number;
@@ -274,59 +275,47 @@ export default function UnitsPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto w-full max-w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nama Satuan</TableHead>
-                    <TableHead>Singkatan</TableHead>
-                    <TableHead className="text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {units?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center py-8">
-                        Belum ada satuan. Klik "Tambah Satuan" untuk
-                        menambahkan.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    units?.map((unit: Unit) => (
-                      <TableRow key={unit.unit_id}>
-                        <TableCell className="font-medium">
-                          {unit.unit_name}
-                        </TableCell>
-                        <TableCell>{unit.unit_abbreviation}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(unit)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDelete(unit.unit_id, unit.unit_name)
-                              }
-                              disabled={deleteMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <DataTable
+            data={units || []}
+            searchKeys={["unit_name", "unit_abbreviation"]}
+            emptyMessage='Belum ada satuan. Klik "Tambah Satuan" untuk menambahkan.'
+            columns={[
+              {
+                key: "unit_name",
+                header: "Nama Satuan",
+                cell: (unit: any) => (
+                  <span className="font-medium">{unit.unit_name}</span>
+                ),
+              },
+              {
+                key: "unit_abbreviation",
+                header: "Singkatan",
+              },
+              {
+                key: "actions",
+                header: "Aksi",
+                cell: (unit: any) => (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(unit)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(unit.unit_id, unit.unit_name)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>
