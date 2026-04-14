@@ -183,7 +183,34 @@ Status PO akan menjadi **Draft** setelah dibuat.
 4. Klik **Tandai Semua Dibaca** untuk membersihkan semua notifikasi
 5. Klik **Hapus** (icon sampah) untuk menghapus notifikasi individual
 
-### 4.3 Menghitung Ulang EOQ
+### 4.3 Riwayat Transaksi Stok
+
+1. Klik menu **Riwayat Stok** di sidebar
+2. Lihat semua riwayat perubahan stok:
+   - **Produk** — nama dan kode produk
+   - **Jenis** — Pemasukan, Pengeluaran, Penyesuaian, atau Penerimaan PO
+   - **Jumlah** — perubahan stok (+/-)
+   - **Sebelum & Sesudah** — level stok sebelum dan sesudah transaksi
+   - **Referensi** — sumber transaksi (misal: PO)
+   - **Oleh** — siapa yang melakukan transaksi
+   - **Tanggal** — waktu transaksi
+3. Filter berdasarkan **produk** atau **jenis transaksi** jika diperlukan
+
+### 4.4 Hasil Perhitungan EOQ
+
+1. Klik menu **Hasil EOQ** di sidebar
+2. Lihat semua hasil perhitungan EOQ per produk:
+   - **EOQ (Q\*)** — jumlah pesanan optimal
+   - **Reorder Point** — batas stok minimum untuk reorder
+   - **Safety Stock** — stok pengaman
+   - **Order/Tahun** — frekuensi pesanan per tahun
+   - **Interval Order** — jarak antar pesanan (hari)
+   - **Biaya Pesan/Simpan/Inventori** — detail biaya tahunan
+   - **Lead Time** — waktu tunggu pengiriman
+3. Filter berdasarkan **produk** jika diperlukan
+4. Klik **Tambah Parameter EOQ** jika belum ada perhitungan
+
+### 4.5 Menghitung Ulang EOQ
 
 1. Klik menu **EOQ Parameters**
 2. Pada baris produk yang ingin dihitung ulang, klik **Hitung Ulang**
