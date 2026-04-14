@@ -123,10 +123,11 @@ export default function NotificationsPage() {
   };
 
   const filteredNotifications = notifications?.filter(
-    (n: Notification) => filter === "all" || !n.is_read
+    (n: Notification) => filter === "all" || !n.is_read,
   );
 
-  const unreadCount = notifications?.filter((n: Notification) => !n.is_read).length || 0;
+  const unreadCount =
+    notifications?.filter((n: Notification) => !n.is_read).length || 0;
 
   const formatTime = (date: string) => {
     const now = new Date();
@@ -149,7 +150,7 @@ export default function NotificationsPage() {
 
   return (
     <AppLayout pageTitle="Notifikasi">
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">Notifikasi</h1>
@@ -174,7 +175,7 @@ export default function NotificationsPage() {
                 onClick={() => markAllReadMutation.mutate()}
                 disabled={markAllReadMutation.isPending}
               >
-                <CheckCheck className="mr-2 h-4 w-4" />
+                <CheckCheck className="h-4 w-4" />
                 Tandai Semua Dibaca
               </Button>
             )}
@@ -232,10 +233,7 @@ export default function NotificationsPage() {
                             </div>
                             <div className="flex items-center gap-1 flex-shrink-0">
                               {!notif.is_read && (
-                                <Badge
-                                  variant="default"
-                                  className="text-xs"
-                                >
+                                <Badge variant="default" className="text-xs">
                                   Baru
                                 </Badge>
                               )}
@@ -253,7 +251,9 @@ export default function NotificationsPage() {
                                   size="sm"
                                   className="h-6 px-2 text-xs"
                                   onClick={() =>
-                                    markAsReadMutation.mutate(notif.notification_id)
+                                    markAsReadMutation.mutate(
+                                      notif.notification_id,
+                                    )
                                   }
                                 >
                                   <Check className="mr-1 h-3 w-3" />
@@ -265,7 +265,9 @@ export default function NotificationsPage() {
                                 size="sm"
                                 className="h-6 px-2 text-xs text-destructive hover:text-destructive"
                                 onClick={() =>
-                                  handleDeleteNotification(notif.notification_id)
+                                  handleDeleteNotification(
+                                    notif.notification_id,
+                                  )
                                 }
                               >
                                 <Trash2 className="h-3 w-3" />

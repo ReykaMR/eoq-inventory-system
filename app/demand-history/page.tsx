@@ -144,10 +144,12 @@ export default function DemandHistoryPage() {
 
   return (
     <AppLayout pageTitle="Riwayat Demand">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Riwayat Demand</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Riwayat Demand
+            </h1>
             <p className="text-muted-foreground mt-1">
               Catat dan lihat riwayat permintaan bulanan untuk analisis EOQ
             </p>
@@ -155,7 +157,7 @@ export default function DemandHistoryPage() {
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Tambah Data Demand
               </Button>
             </DialogTrigger>
@@ -284,7 +286,7 @@ export default function DemandHistoryPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     Simpan
                   </Button>
@@ -299,64 +301,68 @@ export default function DemandHistoryPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produk</TableHead>
-                  <TableHead>Periode</TableHead>
-                  <TableHead>Demand</TableHead>
-                  <TableHead>Catatan</TableHead>
-                  <TableHead>Dicatat Oleh</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {demandHistory?.length === 0 ? (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto w-full max-w-full">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      Belum ada data demand. Klik "Tambah Data Demand" untuk menambahkan.
-                    </TableCell>
+                    <TableHead>Produk</TableHead>
+                    <TableHead>Periode</TableHead>
+                    <TableHead>Demand</TableHead>
+                    <TableHead>Catatan</TableHead>
+                    <TableHead>Dicatat Oleh</TableHead>
                   </TableRow>
-                ) : (
-                  demandHistory?.map((demand: any) => (
-                    <TableRow key={demand.demand_id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">
-                            {demand.products?.product_name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {demand.products?.product_code}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {demand.period_month >= 1 && demand.period_month <= 12
-                              ? monthNames[demand.period_month - 1]
-                              : "Unknown"}{" "}
-                            {demand.period_year}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {parseFloat(demand.demand_quantity).toLocaleString(
-                          "id-ID",
-                        )}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {demand.notes || "-"}
-                      </TableCell>
-                      <TableCell>
-                        {demand.users?.full_name || "System"}
+                </TableHeader>
+                <TableBody>
+                  {demandHistory?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8">
+                        Belum ada data demand. Klik "Tambah Data Demand" untuk
+                        menambahkan.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    demandHistory?.map((demand: any) => (
+                      <TableRow key={demand.demand_id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">
+                              {demand.products?.product_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {demand.products?.product_code}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              {demand.period_month >= 1 &&
+                              demand.period_month <= 12
+                                ? monthNames[demand.period_month - 1]
+                                : "Unknown"}{" "}
+                              {demand.period_year}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {parseFloat(demand.demand_quantity).toLocaleString(
+                            "id-ID",
+                          )}
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">
+                          {demand.notes || "-"}
+                        </TableCell>
+                        <TableCell>
+                          {demand.users?.full_name || "System"}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

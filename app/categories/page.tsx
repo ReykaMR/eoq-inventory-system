@@ -167,7 +167,9 @@ export default function CategoriesPage() {
   };
 
   const handleDelete = (id: number, name: string) => {
-    if (window.confirm(`Apakah Anda yakin ingin menghapus Kategori "${name}"?`)) {
+    if (
+      window.confirm(`Apakah Anda yakin ingin menghapus Kategori "${name}"?`)
+    ) {
       deleteMutation.mutate(id);
     }
   };
@@ -207,7 +209,7 @@ export default function CategoriesPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Kategori">
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -317,7 +319,7 @@ export default function CategoriesPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     {editingCategory ? "Perbarui" : "Simpan"}
                   </Button>
@@ -333,7 +335,7 @@ export default function CategoriesPage() {
           </div>
         ) : (
           <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto w-full max-w-full">
               <Table>
                 <TableHeader>
                   <TableRow>

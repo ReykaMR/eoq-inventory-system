@@ -81,13 +81,7 @@ export default function UnitsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({
-      id,
-      data,
-    }: {
-      id: number;
-      data: typeof formData;
-    }) => {
+    mutationFn: async ({ id, data }: { id: number; data: typeof formData }) => {
       const res = await fetch(`/api/units/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -189,7 +183,7 @@ export default function UnitsPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Satuan">
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -202,7 +196,7 @@ export default function UnitsPage() {
           <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Tambah Satuan
               </Button>
             </DialogTrigger>
@@ -265,7 +259,7 @@ export default function UnitsPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     {editingUnit ? "Perbarui" : "Simpan"}
                   </Button>
@@ -281,7 +275,7 @@ export default function UnitsPage() {
           </div>
         ) : (
           <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto w-full max-w-full">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -294,7 +288,8 @@ export default function UnitsPage() {
                   {units?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={3} className="text-center py-8">
-                        Belum ada satuan. Klik "Tambah Satuan" untuk menambahkan.
+                        Belum ada satuan. Klik "Tambah Satuan" untuk
+                        menambahkan.
                       </TableCell>
                     </TableRow>
                   ) : (

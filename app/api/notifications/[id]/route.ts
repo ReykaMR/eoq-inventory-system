@@ -1,4 +1,3 @@
-// Notification update API (mark as read, delete)
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -7,7 +6,7 @@ import prisma from "@/lib/prisma";
 // PUT - Mark notification as read
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -31,7 +30,7 @@ export async function PUT(
     console.error("Error updating notification:", error);
     return NextResponse.json(
       { error: "Failed to update notification" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -39,7 +38,7 @@ export async function PUT(
 // DELETE - Delete notification
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -63,7 +62,7 @@ export async function DELETE(
     if (deleted.count === 0) {
       return NextResponse.json(
         { error: "Notification not found or not owned by user" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -72,7 +71,7 @@ export async function DELETE(
     console.error("Error deleting notification:", error);
     return NextResponse.json(
       { error: "Failed to delete notification" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

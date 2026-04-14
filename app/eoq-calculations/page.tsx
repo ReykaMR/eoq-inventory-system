@@ -87,7 +87,7 @@ export default function EoqCalculationsPage() {
 
   return (
     <AppLayout pageTitle="Hasil Perhitungan EOQ">
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
         <div>
           <h1 className="text-2xl font-bold">Hasil Perhitungan EOQ</h1>
           <p className="text-muted-foreground mt-1">
@@ -135,7 +135,7 @@ export default function EoqCalculationsPage() {
               </p>
               <Button className="mt-4" asChild>
                 <a href="/eoq">
-                  <Calculator className="mr-2 h-4 w-4" />
+                  <Calculator className="h-4 w-4" />
                   Tambah Parameter EOQ
                 </a>
               </Button>
@@ -211,8 +211,8 @@ export default function EoqCalculationsPage() {
                         {Number(calc.orders_per_year).toFixed(1)}x
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        setiap{" "}
-                        {Number(calc.order_interval_days).toFixed(0)} hari
+                        setiap {Number(calc.order_interval_days).toFixed(0)}{" "}
+                        hari
                       </p>
                     </div>
                     <div>

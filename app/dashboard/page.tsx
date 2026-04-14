@@ -305,7 +305,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto w-full max-w-full">
                     <Table>
                       <TableHeader>
                         <TableRow>

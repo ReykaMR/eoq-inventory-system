@@ -1,4 +1,3 @@
-// Notifications API - GET all notifications for current user
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -29,7 +28,7 @@ export async function GET(request: Request) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json(
       { error: "Failed to fetch notifications" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -60,7 +59,7 @@ export async function POST(request: Request) {
     console.error("Error creating notification:", error);
     return NextResponse.json(
       { error: "Failed to create notification" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

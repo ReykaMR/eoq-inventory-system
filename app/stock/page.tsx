@@ -140,10 +140,12 @@ export default function StockPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Stok">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Manajemen Stok</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Manajemen Stok
+            </h1>
             <p className="text-muted-foreground mt-1">
               Kelola stok dan catat transaksi persediaan
             </p>
@@ -151,7 +153,7 @@ export default function StockPage() {
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button>
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
                 Catat Transaksi
               </Button>
             </DialogTrigger>
@@ -270,7 +272,7 @@ export default function StockPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     Simpan
                   </Button>
@@ -285,72 +287,82 @@ export default function StockPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produk</TableHead>
-                  <TableHead>Kategori</TableHead>
-                  <TableHead>Stok Saat Ini</TableHead>
-                  <TableHead>Min. Stok</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Terakhir Update</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {stock?.length === 0 ? (
+          <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-x-auto w-full max-w-full">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      Belum ada data stok
-                    </TableCell>
+                    <TableHead>Produk</TableHead>
+                    <TableHead>Kategori</TableHead>
+                    <TableHead>Stok Saat Ini</TableHead>
+                    <TableHead>Min. Stok</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Terakhir Update</TableHead>
                   </TableRow>
-                ) : (
-                  stock?.map((item: any) => {
-                    const status = getStockStatus(
-                      parseFloat(item.current_quantity),
-                      parseFloat(item.products?.min_stock ?? 0),
-                    );
-                    return (
-                      <TableRow key={item.stock_id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">
-                              {item.products?.product_name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.products?.product_code}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {item.products?.categories?.category_name ?? "-"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">
-                              {parseFloat(item.current_quantity).toLocaleString("id-ID")}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {item.products?.units?.unit_abbreviation ?? ""}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {parseFloat(item.products?.min_stock ?? 0).toLocaleString("id-ID")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={status.variant}>{status.label}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(item.last_updated).toLocaleDateString("id-ID")}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {stock?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        Belum ada data stok
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    stock?.map((item: any) => {
+                      const status = getStockStatus(
+                        parseFloat(item.current_quantity),
+                        parseFloat(item.products?.min_stock ?? 0),
+                      );
+                      return (
+                        <TableRow key={item.stock_id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">
+                                {item.products?.product_name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {item.products?.product_code}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {item.products?.categories?.category_name ?? "-"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Package className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">
+                                {parseFloat(
+                                  item.current_quantity,
+                                ).toLocaleString("id-ID")}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {item.products?.units?.unit_abbreviation ?? ""}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {parseFloat(
+                              item.products?.min_stock ?? 0,
+                            ).toLocaleString("id-ID")}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={status.variant}>
+                              {status.label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(item.last_updated).toLocaleDateString(
+                              "id-ID",
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

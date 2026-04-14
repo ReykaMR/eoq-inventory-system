@@ -11,7 +11,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, ArrowLeft, CheckCircle, XCircle, Clock, DollarSign, Package, Star } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  Clock,
+  DollarSign,
+  Package,
+  Star,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";

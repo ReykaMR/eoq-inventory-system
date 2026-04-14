@@ -233,7 +233,7 @@ export default function LoginPage() {
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5" />
+                      <Loader2 className="h-5 w-5" />
                       Masuk...
                     </>
                   ) : (
