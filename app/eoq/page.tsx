@@ -4,14 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -357,100 +350,85 @@ export default function EOQPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto w-full max-w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Produk</TableHead>
-                    <TableHead>Permintaan/Tahun</TableHead>
-                    <TableHead>Biaya Pesan</TableHead>
-                    <TableHead>Biaya Simpan</TableHead>
-                    <TableHead>Tanggal Efektif</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {eoqParams?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
-                        Belum ada parameter EOQ. Klik &quot;Tambah
-                        Parameter&quot; untuk menambahkan.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    eoqParams?.map((param: any) => (
-                      <TableRow key={param.parameter_id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">
-                              {param.products?.product_code}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {param.products?.product_name}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {parseInt(param.annual_demand).toLocaleString(
-                            "id-ID",
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          Rp{" "}
-                          {parseInt(param.ordering_cost).toLocaleString(
-                            "id-ID",
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          Rp{" "}
-                          {parseInt(param.holding_cost_per_unit).toLocaleString(
-                            "id-ID",
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(param.effective_date).toLocaleDateString(
-                            "id-ID",
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={param.is_active ? "default" : "secondary"}
-                          >
-                            {param.is_active ? (
-                              <>
-                                <CheckCircle className="h-3 w-3" />
-                                Aktif
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="h-3 w-3" />
-                                Nonaktif
-                              </>
-                            )}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              calculateMutation.mutate(param.product_id)
-                            }
-                            disabled={calculateMutation.isPending}
-                          >
-                            <Calculator className="h-4 w-4" />
-                            Hitung Ulang
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <DataTable
+            data={eoqParams || []}
+            searchKeys={["products"]}
+            emptyMessage='Belum ada parameter EOQ. Klik "Tambah Parameter" untuk menambahkan.'
+            columns={[
+              {
+                key: "product_code",
+                header: "Produk",
+                cell: (p: any) => (
+                  <div>
+                    <p className="font-medium">{p.products?.product_code}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {p.products?.product_name}
+                    </p>
+                  </div>
+                ),
+              },
+              {
+                key: "annual_demand",
+                header: "Permintaan/Tahun",
+                cell: (p: any) =>
+                  parseInt(p.annual_demand).toLocaleString("id-ID"),
+              },
+              {
+                key: "ordering_cost",
+                header: "Biaya Pesan",
+                cell: (p: any) =>
+                  `Rp ${parseInt(p.ordering_cost).toLocaleString("id-ID")}`,
+              },
+              {
+                key: "holding_cost_per_unit",
+                header: "Biaya Simpan",
+                cell: (p: any) =>
+                  `Rp ${parseInt(p.holding_cost_per_unit).toLocaleString("id-ID")}`,
+              },
+              {
+                key: "effective_date",
+                header: "Tanggal Efektif",
+                className: "hidden md:table-cell",
+                cell: (p: any) =>
+                  new Date(p.effective_date).toLocaleDateString("id-ID"),
+              },
+              {
+                key: "is_active",
+                header: "Status",
+                className: "hidden sm:table-cell",
+                cell: (p: any) => (
+                  <Badge variant={p.is_active ? "default" : "secondary"}>
+                    {p.is_active ? (
+                      <>
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Aktif
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="mr-1 h-3 w-3" />
+                        Nonaktif
+                      </>
+                    )}
+                  </Badge>
+                ),
+              },
+              {
+                key: "actions",
+                header: "Aksi",
+                cell: (p: any) => (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => calculateMutation.mutate(p.product_id)}
+                    disabled={calculateMutation.isPending}
+                  >
+                    <Calculator className="h-4 w-4 mr-1" />
+                    Hitung Ulang
+                  </Button>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>

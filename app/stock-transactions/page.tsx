@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Select,
   SelectContent,
@@ -14,20 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   TrendingUp,
   TrendingDown,
   RefreshCw,
   Package,
   Loader2,
-  FileText,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -149,102 +141,89 @@ export default function StockTransactionsPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto w-full max-w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Produk</TableHead>
-                    <TableHead>Jenis</TableHead>
-                    <TableHead>Jumlah</TableHead>
-                    <TableHead>Sebelum</TableHead>
-                    <TableHead>Sesudah</TableHead>
-                    <TableHead>Referensi</TableHead>
-                    <TableHead>Oleh</TableHead>
-                    <TableHead>Catatan</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="text-center py-12">
-                        <div className="flex flex-col items-center gap-3">
-                          <FileText className="h-10 w-10 text-muted-foreground/50" />
-                          <p className="font-medium">Belum ada transaksi</p>
-                          <p className="text-sm text-muted-foreground">
-                            Transaksi stok akan muncul saat ada perubahan stok
-                          </p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    transactions?.map((tx: any) => {
-                      const Icon = typeIcons[tx.transaction_type] || Package;
-                      return (
-                        <TableRow key={tx.transaction_id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">
-                                {tx.products?.product_name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {tx.products?.product_code}
-                              </p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={
-                                typeColors[tx.transaction_type] ||
-                                "bg-gray-500/10 text-gray-600"
-                              }
-                            >
-                              <Icon className="mr-1 h-3 w-3" />
-                              {typeLabels[tx.transaction_type] ||
-                                tx.transaction_type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {tx.transaction_type === "OUT" ? "-" : "+"}
-                            {parseFloat(tx.quantity).toLocaleString("id-ID")}
-                          </TableCell>
-                          <TableCell>
-                            {parseFloat(tx.quantity_before).toLocaleString(
-                              "id-ID",
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {parseFloat(tx.quantity_after).toLocaleString(
-                              "id-ID",
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {tx.reference_type ? (
-                              <Badge variant="outline" className="text-xs">
-                                {tx.reference_type}: {tx.reference_id || "-"}
-                              </Badge>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {tx.users?.full_name || "System"}
-                          </TableCell>
-                          <TableCell className="max-w-xs truncate text-sm">
-                            {tx.notes || "-"}
-                          </TableCell>
-                          <TableCell className="text-sm whitespace-nowrap">
-                            {formatDateTime(tx.transaction_date)}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <DataTable
+            data={transactions || []}
+            searchKeys={["products"]}
+            emptyMessage="Belum ada transaksi"
+            columns={[
+              {
+                key: "product",
+                header: "Produk",
+                cell: (tx: any) => (
+                  <div>
+                    <p className="font-medium">{tx.products?.product_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {tx.products?.product_code}
+                    </p>
+                  </div>
+                ),
+              },
+              {
+                key: "transaction_type",
+                header: "Jenis",
+                cell: (tx: any) => {
+                  const Icon = typeIcons[tx.transaction_type] || Package;
+                  return (
+                    <Badge
+                      className={
+                        typeColors[tx.transaction_type] ||
+                        "bg-gray-500/10 text-gray-600"
+                      }
+                    >
+                      <Icon className="mr-1 h-3 w-3" />
+                      {typeLabels[tx.transaction_type] || tx.transaction_type}
+                    </Badge>
+                  );
+                },
+              },
+              {
+                key: "quantity",
+                header: "Jumlah",
+                cell: (tx: any) =>
+                  `${tx.transaction_type === "OUT" ? "-" : "+"}${parseFloat(tx.quantity).toLocaleString("id-ID")}`,
+              },
+              {
+                key: "quantity_before",
+                header: "Sebelum",
+                className: "hidden md:table-cell",
+                cell: (tx: any) =>
+                  parseFloat(tx.quantity_before).toLocaleString("id-ID"),
+              },
+              {
+                key: "quantity_after",
+                header: "Sesudah",
+                className: "hidden md:table-cell",
+                cell: (tx: any) =>
+                  parseFloat(tx.quantity_after).toLocaleString("id-ID"),
+              },
+              {
+                key: "reference",
+                header: "Referensi",
+                className: "hidden lg:table-cell",
+                cell: (tx: any) =>
+                  tx.reference_type
+                    ? `${tx.reference_type}: ${tx.reference_id || "-"}`
+                    : "-",
+              },
+              {
+                key: "user",
+                header: "Oleh",
+                className: "hidden sm:table-cell",
+                cell: (tx: any) => tx.users?.full_name || "System",
+              },
+              {
+                key: "notes",
+                header: "Catatan",
+                className: "hidden lg:table-cell",
+                cell: (tx: any) => tx.notes || "-",
+              },
+              {
+                key: "transaction_date",
+                header: "Tanggal",
+                cell: (tx: any) => formatDateTime(tx.transaction_date),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>

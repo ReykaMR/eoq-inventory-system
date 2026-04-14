@@ -4,14 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -396,108 +389,91 @@ export default function UsersPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto w-full max-w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Username</TableHead>
-                    <TableHead>Nama Lengkap</TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Email
-                    </TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="hidden lg:table-cell">
-                      Terakhir Login
-                    </TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Status
-                    </TableHead>
-                    <TableHead>Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
-                        Belum ada user. Klik &quot;Tambah User&quot; untuk
-                        menambahkan.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    users?.map((user: User) => (
-                      <TableRow key={user.user_id}>
-                        <TableCell className="font-medium">
-                          {user.username}
-                        </TableCell>
-                        <TableCell>{user.full_name}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {user.email}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {formatRole(user.role)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {user.last_login
-                            ? new Date(user.last_login).toLocaleString(
-                                "id-ID",
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )
-                            : "Belum pernah"}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <Badge
-                            variant={user.is_active ? "default" : "secondary"}
-                          >
-                            {user.is_active ? (
-                              <>
-                                <CheckCircle className="h-3 w-3" />
-                                Aktif
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="h-3 w-3" />
-                                Nonaktif
-                              </>
-                            )}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(user)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDelete(user.user_id, user.full_name)
-                              }
-                              disabled={deleteMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <DataTable
+            data={users || []}
+            searchKeys={["username", "full_name", "email", "role"]}
+            emptyMessage='Belum ada user. Klik "Tambah User" untuk menambahkan.'
+            columns={[
+              {
+                key: "username",
+                header: "Username",
+                cell: (u: any) => (
+                  <span className="font-medium">{u.username}</span>
+                ),
+              },
+              { key: "full_name", header: "Nama Lengkap" },
+              {
+                key: "email",
+                header: "Email",
+                className: "hidden sm:table-cell",
+              },
+              {
+                key: "role",
+                header: "Role",
+                cell: (u: any) => (
+                  <Badge variant="outline">{formatRole(u.role)}</Badge>
+                ),
+              },
+              {
+                key: "last_login",
+                header: "Terakhir Login",
+                className: "hidden lg:table-cell",
+                cell: (u: any) =>
+                  u.last_login
+                    ? new Date(u.last_login).toLocaleString("id-ID", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Belum pernah",
+              },
+              {
+                key: "is_active",
+                header: "Status",
+                className: "hidden md:table-cell",
+                cell: (u: any) => (
+                  <Badge variant={u.is_active ? "default" : "secondary"}>
+                    {u.is_active ? (
+                      <>
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Aktif
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="mr-1 h-3 w-3" />
+                        Nonaktif
+                      </>
+                    )}
+                  </Badge>
+                ),
+              },
+              {
+                key: "actions",
+                header: "Aksi",
+                cell: (u: any) => (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(u)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(u.user_id, u.full_name)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>

@@ -10,14 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Package,
   AlertTriangle,
@@ -305,73 +298,72 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto w-full max-w-full">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Produk</TableHead>
-                          <TableHead>Stok Saat Ini</TableHead>
-                          <TableHead>ROP</TableHead>
-                          <TableHead>EOQ</TableHead>
-                          <TableHead className="hidden sm:table-cell">
-                            Supplier
-                          </TableHead>
-                          <TableHead>Aksi</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {productsNeedReorder.map(
-                          (product: any, index: number) => (
-                            <TableRow key={index} className="">
-                              <TableCell>
-                                <div>
-                                  <p className="font-semibold">
-                                    {product.product_name}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {product.product_code}
-                                  </p>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="destructive"
-                                  className="font-medium"
-                                >
-                                  {product.current_stock}{" "}
-                                  {product.unit_abbreviation}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                {product.reorder_point}
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="secondary"
-                                  className="font-medium"
-                                >
-                                  {Math.round(Number(product.eoq_quantity))}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="hidden sm:table-cell">
-                                {product.supplier_name || "-"}
-                              </TableCell>
-                              <TableCell>
-                                <Link href="/purchase-orders">
-                                  <Badge
-                                    variant="outline"
-                                    className="cursor-pointer"
-                                  >
-                                    Buat PO
-                                  </Badge>
-                                </Link>
-                              </TableCell>
-                            </TableRow>
-                          ),
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                  <DataTable
+                    data={productsNeedReorder}
+                    searchKeys={[
+                      "product_name",
+                      "product_code",
+                      "supplier_name",
+                    ]}
+                    emptyMessage="Semua produk dalam kondisi aman"
+                    pageSizeOptions={[5, 10, 25]}
+                    columns={[
+                      {
+                        key: "product",
+                        header: "Produk",
+                        cell: (p: any) => (
+                          <div>
+                            <p className="font-semibold">{p.product_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {p.product_code}
+                            </p>
+                          </div>
+                        ),
+                      },
+                      {
+                        key: "current_stock",
+                        header: "Stok",
+                        cell: (p: any) => (
+                          <Badge variant="destructive" className="font-medium">
+                            {p.current_stock} {p.unit_abbreviation}
+                          </Badge>
+                        ),
+                      },
+                      {
+                        key: "reorder_point",
+                        header: "ROP",
+                        cell: (p: any) => (
+                          <span className="font-medium">{p.reorder_point}</span>
+                        ),
+                      },
+                      {
+                        key: "eoq_quantity",
+                        header: "EOQ",
+                        cell: (p: any) => (
+                          <Badge variant="secondary" className="font-medium">
+                            {Math.round(Number(p.eoq_quantity))}
+                          </Badge>
+                        ),
+                      },
+                      {
+                        key: "supplier_name",
+                        header: "Supplier",
+                        className: "hidden sm:table-cell",
+                        cell: (p: any) => p.supplier_name || "-",
+                      },
+                      {
+                        key: "actions",
+                        header: "Aksi",
+                        cell: () => (
+                          <Link href="/purchase-orders">
+                            <Badge variant="outline" className="cursor-pointer">
+                              Buat PO
+                            </Badge>
+                          </Link>
+                        ),
+                      },
+                    ]}
+                  />
                 )}
               </CardContent>
             </Card>

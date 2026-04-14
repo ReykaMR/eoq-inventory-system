@@ -6,14 +6,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -370,98 +363,87 @@ export default function PurchaseOrdersPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="overflow-x-auto w-full max-w-full">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>PO Number</TableHead>
-                      <TableHead>Supplier</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Tanggal
-                      </TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Aksi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {purchaseOrders?.length === 0 ? (
-                      <tr key="empty">
-                        <TableCell colSpan={6} className="text-center py-8">
-                          Belum ada PO. Klik "Buat PO" untuk membuat.
-                        </TableCell>
-                      </tr>
-                    ) : (
-                      purchaseOrders?.map((po: any) => (
-                        <tr key={po.po_id}>
-                          <TableCell className="font-medium">
-                            {po.po_number}
-                          </TableCell>
-                          <TableCell>{po.suppliers?.supplier_name}</TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            {new Date(po.order_date).toLocaleDateString(
-                              "id-ID",
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {formatCurrency(po.total_amount)}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(po.status)}</TableCell>
-                          <TableCell>
-                            <div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedPO(po)}
-                              >
-                                <div>
-                                  <Eye className="h-4 w-4" />
-                                </div>
-                              </Button>
-
-                              {canCreate && po.status === "draft" && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    updateStatusMutation.mutate({
-                                      poId: po.po_id,
-                                      action: "submit",
-                                    })
-                                  }
-                                  disabled={updateStatusMutation.isPending}
-                                >
-                                  <div>
-                                    <Send className="h-4 w-4" />
-                                  </div>
-                                </Button>
-                              )}
-
-                              {canApprove && po.status === "diajukan" && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    updateStatusMutation.mutate({
-                                      poId: po.po_id,
-                                      action: "approve",
-                                    })
-                                  }
-                                  disabled={updateStatusMutation.isPending}
-                                >
-                                  <div>
-                                    <Check className="h-4 w-4" />
-                                  </div>
-                                </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </tr>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+              <DataTable
+                data={purchaseOrders || []}
+                searchKeys={["po_number", "suppliers"]}
+                emptyMessage='Belum ada PO. Klik "Buat PO" untuk membuat.'
+                columns={[
+                  {
+                    key: "po_number",
+                    header: "PO Number",
+                    cell: (po: any) => (
+                      <span className="font-medium">{po.po_number}</span>
+                    ),
+                  },
+                  {
+                    key: "supplier_name",
+                    header: "Supplier",
+                    cell: (po: any) => po.suppliers?.supplier_name,
+                  },
+                  {
+                    key: "order_date",
+                    header: "Tanggal",
+                    className: "hidden sm:table-cell",
+                    cell: (po: any) =>
+                      new Date(po.order_date).toLocaleDateString("id-ID"),
+                  },
+                  {
+                    key: "total_amount",
+                    header: "Total",
+                    cell: (po: any) => formatCurrency(po.total_amount),
+                  },
+                  {
+                    key: "status",
+                    header: "Status",
+                    cell: (po: any) => getStatusBadge(po.status),
+                  },
+                  {
+                    key: "actions",
+                    header: "Aksi",
+                    cell: (po: any) => (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedPO(po)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {canCreate && po.status === "draft" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              updateStatusMutation.mutate({
+                                poId: po.po_id,
+                                action: "submit",
+                              })
+                            }
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {canApprove && po.status === "diajukan" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              updateStatusMutation.mutate({
+                                poId: po.po_id,
+                                action: "approve",
+                              })
+                            }
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ),
+                  },
+                ]}
+              />
             )}
           </CardContent>
         </Card>

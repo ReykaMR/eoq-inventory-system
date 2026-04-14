@@ -4,14 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -442,92 +435,95 @@ export default function SuppliersPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto w-full max-w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Kode</TableHead>
-                    <TableHead>Nama</TableHead>
-                    <TableHead>Kontak</TableHead>
-                    <TableHead>Telepon</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Kota</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {suppliers?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
-                        Belum ada supplier. Klik &quot;Tambah Supplier&quot;
-                        untuk menambahkan.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    suppliers?.map((supplier: Supplier) => (
-                      <TableRow key={supplier.supplier_id}>
-                        <TableCell className="font-medium">
-                          {supplier.supplier_code}
-                        </TableCell>
-                        <TableCell>{supplier.supplier_name}</TableCell>
-                        <TableCell>{supplier.contact_person || "-"}</TableCell>
-                        <TableCell>{supplier.phone || "-"}</TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {supplier.email || "-"}
-                        </TableCell>
-                        <TableCell>{supplier.city || "-"}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              supplier.is_active ? "default" : "secondary"
-                            }
-                          >
-                            {supplier.is_active ? (
-                              <>
-                                <CheckCircle className="h-3 w-3" />
-                                Aktif
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="h-3 w-3" />
-                                Nonaktif
-                              </>
-                            )}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(supplier)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDelete(
-                                  supplier.supplier_id,
-                                  supplier.supplier_name,
-                                )
-                              }
-                              disabled={deleteMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <DataTable
+            data={suppliers || []}
+            searchKeys={[
+              "supplier_code",
+              "supplier_name",
+              "contact_person",
+              "phone",
+              "email",
+              "city",
+            ]}
+            emptyMessage='Belum ada supplier. Klik "Tambah Supplier" untuk menambahkan.'
+            columns={[
+              {
+                key: "supplier_code",
+                header: "Kode",
+                cell: (s: any) => (
+                  <span className="font-medium">{s.supplier_code}</span>
+                ),
+              },
+              { key: "supplier_name", header: "Nama" },
+              {
+                key: "contact_person",
+                header: "Kontak",
+                cell: (s: any) => s.contact_person || "-",
+              },
+              {
+                key: "phone",
+                header: "Telepon",
+                cell: (s: any) => s.phone || "-",
+              },
+              {
+                key: "email",
+                header: "Email",
+                className: "hidden lg:table-cell",
+                cell: (s: any) => s.email || "-",
+              },
+              {
+                key: "city",
+                header: "Kota",
+                className: "hidden md:table-cell",
+                cell: (s: any) => s.city || "-",
+              },
+              {
+                key: "is_active",
+                header: "Status",
+                className: "hidden sm:table-cell",
+                cell: (s: any) => (
+                  <Badge variant={s.is_active ? "default" : "secondary"}>
+                    {s.is_active ? (
+                      <>
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Aktif
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="mr-1 h-3 w-3" />
+                        Nonaktif
+                      </>
+                    )}
+                  </Badge>
+                ),
+              },
+              {
+                key: "actions",
+                header: "Aksi",
+                cell: (s: any) => (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(s)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        handleDelete(s.supplier_id, s.supplier_name)
+                      }
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>

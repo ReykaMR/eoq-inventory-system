@@ -4,14 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -510,138 +503,106 @@ export default function ProductsPage() {
             </div>
           </div>
         ) : (
-          <div className="border rounded-xl overflow-hidden shadow-lg">
-            <div className="overflow-x-auto w-full max-w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Kode</TableHead>
-                    <TableHead>Nama</TableHead>
-                    <TableHead className="hidden md:table-cell">
-                      Kategori
-                    </TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Satuan
-                    </TableHead>
-                    <TableHead className="hidden lg:table-cell">
-                      Harga Beli
-                    </TableHead>
-                    <TableHead className="hidden xl:table-cell">
-                      Harga Jual
-                    </TableHead>
-                    <TableHead className="hidden 2xl:table-cell">
-                      Stok Maks
-                    </TableHead>
-                    <TableHead>Stok</TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Status
-                    </TableHead>
-                    <TableHead>Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-16">
-                        <div className="flex flex-col items-center gap-3">
-                          <div className="bg-muted p-4 rounded-full">
-                            <Package className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Belum ada produk</p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Klik "Tambah Produk" untuk menambahkan.
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    products?.map((product: any) => (
-                      <TableRow key={product.product_id} className="">
-                        <TableCell className="font-medium">
-                          {product.product_code}
-                        </TableCell>
-                        <TableCell>{product.product_name}</TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {product.categories?.category_name ?? "-"}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {product.units?.unit_abbreviation ?? "-"}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          Rp{" "}
-                          {parseInt(product.purchase_price).toLocaleString(
-                            "id-ID",
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden xl:table-cell">
-                          {product.selling_price
-                            ? `Rp ${parseInt(product.selling_price).toLocaleString("id-ID")}`
-                            : "-"}
-                        </TableCell>
-                        <TableCell className="hidden 2xl:table-cell">
-                          {product.max_stock
-                            ? parseFloat(product.max_stock).toLocaleString(
-                                "id-ID",
-                              )
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {product.stock?.current_quantity || 0}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge
-                            variant={
-                              product.is_active ? "default" : "secondary"
-                            }
-                          >
-                            {product.is_active ? (
-                              <>
-                                <CheckCircle className="h-3 w-3" />
-                                Aktif
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="h-3 w-3" />
-                                Nonaktif
-                              </>
-                            )}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(product)}
-                              className="hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDelete(
-                                  product.product_id,
-                                  product.product_name,
-                                )
-                              }
-                              disabled={deleteMutation.isPending}
-                              className="hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <DataTable
+            data={products || []}
+            searchKeys={["product_code", "product_name"]}
+            emptyMessage='Belum ada produk. Klik "Tambah Produk" untuk menambahkan.'
+            columns={[
+              {
+                key: "product_code",
+                header: "Kode",
+                cell: (p: any) => (
+                  <span className="font-medium">{p.product_code}</span>
+                ),
+              },
+              { key: "product_name", header: "Nama" },
+              {
+                key: "category_name",
+                header: "Kategori",
+                className: "hidden md:table-cell",
+                cell: (p: any) => p.categories?.category_name ?? "-",
+              },
+              {
+                key: "unit_abbreviation",
+                header: "Satuan",
+                className: "hidden sm:table-cell",
+                cell: (p: any) => p.units?.unit_abbreviation ?? "-",
+              },
+              {
+                key: "purchase_price",
+                header: "Harga Beli",
+                className: "hidden lg:table-cell",
+                cell: (p: any) =>
+                  `Rp ${parseInt(p.purchase_price).toLocaleString("id-ID")}`,
+              },
+              {
+                key: "selling_price",
+                header: "Harga Jual",
+                className: "hidden xl:table-cell",
+                cell: (p: any) =>
+                  p.selling_price
+                    ? `Rp ${parseInt(p.selling_price).toLocaleString("id-ID")}`
+                    : "-",
+              },
+              {
+                key: "max_stock",
+                header: "Stok Maks",
+                className: "hidden 2xl:table-cell",
+                cell: (p: any) =>
+                  p.max_stock
+                    ? parseFloat(p.max_stock).toLocaleString("id-ID")
+                    : "-",
+              },
+              {
+                key: "current_quantity",
+                header: "Stok",
+                cell: (p: any) => p.stock?.current_quantity || 0,
+              },
+              {
+                key: "is_active",
+                header: "Status",
+                className: "hidden sm:table-cell",
+                cell: (p: any) => (
+                  <Badge variant={p.is_active ? "default" : "secondary"}>
+                    {p.is_active ? (
+                      <>
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Aktif
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="mr-1 h-3 w-3" />
+                        Nonaktif
+                      </>
+                    )}
+                  </Badge>
+                ),
+              },
+              {
+                key: "actions",
+                header: "Aksi",
+                cell: (p: any) => (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(p)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(p.product_id, p.product_name)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>
