@@ -67,12 +67,7 @@ git clone https://github.com/ReykaMR/eoq-inventory-system.git
 cd eoq-inventory-system
 ```
 
-2. **Install dependencies**
-```bash
-npm install
-```
-
-3. **Setup environment**
+2. **Setup environment**
 ```bash
 cp .env.example .env
 ```
@@ -81,6 +76,11 @@ Edit `.env` dan sesuaikan:
 DATABASE_URL=postgresql://username:password@localhost:5432/eoq_inventory_system?schema=public
 NEXTAUTH_SECRET=generate-random-secret-key-here
 NEXTAUTH_URL=http://localhost:3000
+```
+
+3. **Install dependencies**
+```bash
+npm install
 ```
 
 4. **Setup database**
