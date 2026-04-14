@@ -9,11 +9,13 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 ### Perhitungan EOQ
 - **EOQ (Economic Order Quantity)**: Menghitung jumlah pesanan optimal untuk meminimalkan total biaya persediaan
 - **Reorder Point (ROP)**: Menentukan level stok di mana pesanan baru harus dilakukan
+- **Hasil EOQ**: Lihat detail semua perhitungan EOQ (Q*, ROP, biaya, dll)
 - **Rekomendasi Otomatis**: Sistem mendeteksi stok di bawah ROP dan menyarankan jumlah EOQ
 
 ### Manajemen Persediaan
 - **Stock Management**: Monitoring stok real-time dengan alert stok menipis
-- **Purchase Orders**: Buat PO dari rekomendasi EOQ dengan auto-fill
+- **Riwayat Stok**: Lihat semua riwayat perubahan stok dengan filter produk & jenis
+- **Purchase Orders**: Buat PO dari rekomendasi EOQ dengan auto-fill atau manual
 - **Demand History**: Catat riwayat permintaan bulanan untuk analisis
 - **Produk & Kategori**: Kelola data produk dengan kategori dan satuan
 
