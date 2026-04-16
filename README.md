@@ -4,8 +4,12 @@ Sistem Penentuan Pembelian Barang Dengan Metode **EOQ (Economic Order Quantity)*
 
 Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pembelian yang optimal menggunakan rumus EOQ standar: **Q\* = √(2DS/H)**
 
-<img width="1241" height="800" alt="halaman_login" src="https://github.com/user-attachments/assets/d4853447-4347-4692-82de-8f889cebdea4" />
-<img width="1241" height="800" alt="halaman_dashboard" src="https://github.com/user-attachments/assets/7a1c7ad2-93ad-42e1-8d44-abc1e5b51f84" />
+<table style="border: none; border-collapse: collapse;">
+  <tr>
+    <td style="border: none;"><img alt="halaman_login" src="https://github.com/user-attachments/assets/d4853447-4347-4692-82de-8f889cebdea4" /></td>
+    <td style="border: none;"><img alt="halaman_dashboard" src="https://github.com/user-attachments/assets/7a1c7ad2-93ad-42e1-8d44-abc1e5b51f84" /></td>
+  </tr>
+</table>
 
 ## Fitur Utama
 
