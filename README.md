@@ -4,6 +4,9 @@ Sistem Penentuan Pembelian Barang Dengan Metode **EOQ (Economic Order Quantity)*
 
 Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pembelian yang optimal menggunakan rumus EOQ standar: **Q\* = √(2DS/H)**
 
+<img width="1241" height="800" alt="halaman_login" src="https://github.com/user-attachments/assets/d4853447-4347-4692-82de-8f889cebdea4" />
+<img width="1241" height="800" alt="halaman_dashboard" src="https://github.com/user-attachments/assets/7a1c7ad2-93ad-42e1-8d44-abc1e5b51f84" />
+
 ## Fitur Utama
 
 ### Perhitungan EOQ
@@ -38,10 +41,10 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 
 | Kategori | Teknologi |
 |----------|-----------|
-| **Framework** | Next.js 16 (Turbopack) |
+| **Framework** | Next.js 15 (App Router) |
 | **Database** | PostgreSQL + Prisma ORM |
 | **Auth** | NextAuth.js (JWT) |
-| **Styling** | Tailwind CSS 4 + shadcn/ui |
+| **Styling** | Tailwind CSS 3 + shadcn/ui |
 | **State** | TanStack React Query |
 | **Charts** | Recharts |
 
@@ -57,8 +60,8 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 ## Instalasi
 
 ### Prasyarat
-- Node.js 18+
-- PostgreSQL 14+
+- Node.js 24
+- PostgreSQL 18
 - npm
 
 ### Langkah Instalasi
@@ -87,7 +90,7 @@ npm install
 
 4. **Setup database**
 ```bash
-npm run db:migrate    # Push schema ke database
+npm run db:migrate    # Jalankan migrasi database (Prisma migrate dev)
 npm run db:setup      # Setup data awal (views, functions)
 npm run db:seed       # Seed data demo (users, produk, dll)
 ```
@@ -147,7 +150,7 @@ npm run dev          # Development server
 npm run build        # Production build
 npm run start        # Production server
 npm run lint         # ESLint
-npm run db:migrate   # Push Prisma schema
+npm run db:migrate   # Jalankan migrasi database
 npm run db:setup     # Setup database views/functions
 npm run db:seed      # Seed demo data
 npm run db:reset     # Reset database + seed ulang
@@ -167,6 +170,15 @@ npm run db:truncate  # Kosongkan semua tabel, reset ID ke 1
 pg_dump -U postgres eoq_inventory_system > backup.sql
 ```
 
+## Troubleshooting Umum
+
+| Masalah | Solusi |
+|---------|--------|
+| `prisma: command not found` | Jalankan `npx prisma` atau install Prisma global `npm i -g prisma` |
+| Database connection error | Pastikan PostgreSQL berjalan dan `DATABASE_URL` benar |
+| `NEXTAUTH_SECRET` missing | Generate secret dengan `openssl rand -base64 32` dan tambahkan ke `.env` |
+| Error saat `npm run db:migrate` | Pastikan database sudah dibuat: `createdb eoq_inventory_system` |
+
 ## Lisensi
 
-MIT License.
+MIT License
