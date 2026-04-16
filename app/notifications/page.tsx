@@ -23,15 +23,17 @@ import {
   Trash2,
   Clock,
 } from "lucide-react";
+import { useToast } from "@/components/toast";
 
 interface Notification {
-  id: number;
+  notification_id: number;
+  user_id: number | null;
   title: string;
   message: string;
   type: "warning" | "info" | "success";
   is_read: boolean;
+  link: string | null;
   created_at: string;
-  link?: string;
 }
 
 const typeIcons = {
@@ -48,6 +50,7 @@ const typeColors = {
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const { data: notifications, isLoading } = useQuery({
@@ -84,6 +87,7 @@ export default function NotificationsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      toast.success("Semua notifikasi ditandai sebagai sudah dibaca");
     },
   });
 
@@ -92,19 +96,38 @@ export default function NotificationsPage() {
       const res = await fetch(`/api/notifications/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error("Failed to delete notification");
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to delete notification");
+      }
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["notifications"] });
+      toast.success("Notifikasi berhasil dihapus");
+    },
+    onError: (err: any) => {
+      console.error("[UI DELETE ERROR]", err);
+      toast.error(err.message || "Gagal menghapus notifikasi");
     },
   });
 
+  const handleDeleteNotification = async (id: number) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus notifikasi ini?")) {
+      try {
+        await deleteMutation.mutateAsync(id);
+      } catch (err) {
+        // Error sudah di-handle di onError
+      }
+    }
+  };
+
   const filteredNotifications = notifications?.filter(
-    (n: Notification) => filter === "all" || !n.is_read
+    (n: Notification) => filter === "all" || !n.is_read,
   );
 
-  const unreadCount = notifications?.filter((n: Notification) => !n.is_read).length || 0;
+  const unreadCount =
+    notifications?.filter((n: Notification) => !n.is_read).length || 0;
 
   const formatTime = (date: string) => {
     const now = new Date();
@@ -127,7 +150,7 @@ export default function NotificationsPage() {
 
   return (
     <AppLayout pageTitle="Notifikasi">
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">Notifikasi</h1>
@@ -152,7 +175,7 @@ export default function NotificationsPage() {
                 onClick={() => markAllReadMutation.mutate()}
                 disabled={markAllReadMutation.isPending}
               >
-                <CheckCheck className="mr-2 h-4 w-4" />
+                <CheckCheck className="h-4 w-4" />
                 Tandai Semua Dibaca
               </Button>
             )}
@@ -187,7 +210,7 @@ export default function NotificationsPage() {
                     const Icon = typeIcons[notif.type];
                     return (
                       <div
-                        key={notif.id}
+                        key={notif.notification_id}
                         className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
                           !notif.is_read
                             ? "bg-accent/50 border-primary/20"
@@ -195,7 +218,7 @@ export default function NotificationsPage() {
                         }`}
                       >
                         <div
-                          className={`flex-shrink-0 rounded-full p-2 ${typeColors[notif.type]}`}
+                          className={`shrink-0 rounded-full p-2 ${typeColors[notif.type]}`}
                         >
                           <Icon className="h-5 w-5" />
                         </div>
@@ -208,12 +231,9 @@ export default function NotificationsPage() {
                                 {notif.message}
                               </p>
                             </div>
-                            <div className="flex items-center gap-1 flex-shrink-0">
+                            <div className="flex items-center gap-1 shrink-0">
                               {!notif.is_read && (
-                                <Badge
-                                  variant="default"
-                                  className="text-xs"
-                                >
+                                <Badge variant="default" className="text-xs">
                                   Baru
                                 </Badge>
                               )}
@@ -231,7 +251,9 @@ export default function NotificationsPage() {
                                   size="sm"
                                   className="h-6 px-2 text-xs"
                                   onClick={() =>
-                                    markAsReadMutation.mutate(notif.id)
+                                    markAsReadMutation.mutate(
+                                      notif.notification_id,
+                                    )
                                   }
                                 >
                                   <Check className="mr-1 h-3 w-3" />
@@ -243,7 +265,9 @@ export default function NotificationsPage() {
                                 size="sm"
                                 className="h-6 px-2 text-xs text-destructive hover:text-destructive"
                                 onClick={() =>
-                                  deleteMutation.mutate(notif.id)
+                                  handleDeleteNotification(
+                                    notif.notification_id,
+                                  )
                                 }
                               >
                                 <Trash2 className="h-3 w-3" />

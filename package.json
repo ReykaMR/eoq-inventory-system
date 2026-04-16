@@ -11,7 +11,8 @@
     "db:migrate": "prisma db push",
     "db:setup": "tsx prisma/setup.ts",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma db push --force-reset && prisma db push && npm run db:setup && npm run db:seed"
+    "db:reset": "tsx prisma/reset.ts && npm run db:setup && npm run db:seed",
+    "db:truncate": "tsx prisma/reset.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",

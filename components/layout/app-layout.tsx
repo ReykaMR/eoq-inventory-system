@@ -13,7 +13,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex w-full min-h-screen">
+    <div className="flex w-full min-h-screen overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -21,7 +21,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
         <Topbar
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -29,7 +29,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
         />
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
       </div>

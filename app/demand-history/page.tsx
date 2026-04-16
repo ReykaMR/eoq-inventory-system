@@ -1,17 +1,11 @@
+// Demand history management
 "use client";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -32,10 +26,12 @@ import {
 } from "@/components/ui/select";
 import { Plus, Loader2, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 export default function DemandHistoryPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     product_id: "",
@@ -88,6 +84,10 @@ export default function DemandHistoryPage() {
       queryClient.invalidateQueries({ queryKey: ["demand-history"] });
       setOpen(false);
       resetForm();
+      toast.success("Demand history berhasil ditambahkan");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal menambahkan demand history");
     },
   });
 
@@ -137,10 +137,12 @@ export default function DemandHistoryPage() {
 
   return (
     <AppLayout pageTitle="Riwayat Demand">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Riwayat Demand</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Riwayat Demand
+            </h1>
             <p className="text-muted-foreground mt-1">
               Catat dan lihat riwayat permintaan bulanan untuk analisis EOQ
             </p>
@@ -277,7 +279,7 @@ export default function DemandHistoryPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     Simpan
                   </Button>
@@ -292,67 +294,75 @@ export default function DemandHistoryPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produk</TableHead>
-                  <TableHead>Periode</TableHead>
-                  <TableHead>Demand</TableHead>
-                  <TableHead>Catatan</TableHead>
-                  <TableHead>Dicatat Oleh</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {demandHistory?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      Belum ada data demand. Klik &quot;Tambah Data Demand&quot;
-                      untuk menambahkan.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  demandHistory?.map((demand: any) => (
-                    <TableRow key={demand.demand_id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">
-                            {demand.products?.product_name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {demand.products?.product_code}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {demand.period_month >= 1 &&
-                            demand.period_month <= 12
-                              ? monthNames[demand.period_month - 1]
-                              : "Unknown"}{" "}
-                            {demand.period_year}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {parseFloat(demand.demand_quantity).toLocaleString(
-                          "id-ID",
-                        )}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {demand.notes || "-"}
-                      </TableCell>
-                      <TableCell>
-                        {demand.users?.full_name || "System"}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            data={demandHistory || []}
+            searchKeys={["products"]}
+            emptyMessage='Belum ada data demand. Klik "Tambah Data Demand" untuk menambahkan.'
+            columns={[
+              {
+                key: "product",
+                header: "Produk",
+                cell: (d: any) => (
+                  <div>
+                    <p className="font-medium">{d.products?.product_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {d.products?.product_code}
+                    </p>
+                  </div>
+                ),
+              },
+              {
+                key: "period",
+                header: "Periode",
+                cell: (d: any) => {
+                  const monthNames = [
+                    "Januari",
+                    "Februari",
+                    "Maret",
+                    "April",
+                    "Mei",
+                    "Juni",
+                    "Juli",
+                    "Agustus",
+                    "September",
+                    "Oktober",
+                    "November",
+                    "Desember",
+                  ];
+                  const m =
+                    d.period_month >= 1 && d.period_month <= 12
+                      ? monthNames[d.period_month - 1]
+                      : "Unknown";
+                  return (
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        {m} {d.period_year}
+                      </span>
+                    </div>
+                  );
+                },
+              },
+              {
+                key: "demand_quantity",
+                header: "Demand",
+                cell: (d: any) =>
+                  parseFloat(d.demand_quantity).toLocaleString("id-ID"),
+              },
+              {
+                key: "notes",
+                header: "Catatan",
+                className: "hidden md:table-cell",
+                cell: (d: any) => d.notes || "-",
+              },
+              {
+                key: "user",
+                header: "Dicatat Oleh",
+                className: "hidden sm:table-cell",
+                cell: (d: any) => d.users?.full_name || "System",
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>

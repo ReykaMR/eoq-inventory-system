@@ -156,9 +156,11 @@ async function calculateEOQ(parameterId: number) {
       total_ordering_cost: Number(eoqResult.total_ordering_cost) || 0,
       total_holding_cost: Number(eoqResult.total_holding_cost) || 0,
       lead_time_days: param.products.product_suppliers[0]?.lead_time_days || 0,
-      users: {
-        connect: { user_id: param.created_by },
-      },
+      ...(param.created_by && {
+        users: {
+          connect: { user_id: param.created_by },
+        },
+      }),
     },
   });
 

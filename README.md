@@ -9,11 +9,13 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 ### Perhitungan EOQ
 - **EOQ (Economic Order Quantity)**: Menghitung jumlah pesanan optimal untuk meminimalkan total biaya persediaan
 - **Reorder Point (ROP)**: Menentukan level stok di mana pesanan baru harus dilakukan
+- **Hasil EOQ**: Lihat detail semua perhitungan EOQ (Q*, ROP, biaya, dll)
 - **Rekomendasi Otomatis**: Sistem mendeteksi stok di bawah ROP dan menyarankan jumlah EOQ
 
 ### Manajemen Persediaan
 - **Stock Management**: Monitoring stok real-time dengan alert stok menipis
-- **Purchase Orders**: Buat PO dari rekomendasi EOQ dengan auto-fill
+- **Riwayat Stok**: Lihat semua riwayat perubahan stok dengan filter produk & jenis
+- **Purchase Orders**: Buat PO dari rekomendasi EOQ dengan auto-fill atau manual
 - **Demand History**: Catat riwayat permintaan bulanan untuk analisis
 - **Produk & Kategori**: Kelola data produk dengan kategori dan satuan
 
@@ -21,6 +23,10 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 - **Supplier**: Kelola data pemasok dengan detail kontak
 - **Satuan**: Kelola satuan pengukuran (kg, liter, pcs, dll)
 - **Users**: Manajemen user dengan role-based access control
+
+### Notifikasi & Profil
+- **Notifikasi**: Peringatan stok menipis, PO pending, transaksi terbaru
+- **Profil**: Lihat dan edit informasi akun pengguna
 
 ### Dashboard
 - Ringkasan nilai stok, produk perlu reorder, PO pending
@@ -59,7 +65,7 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 
 1. **Clone repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/ReykaMR/eoq-inventory-system.git
 cd eoq-inventory-system
 ```
 
@@ -116,6 +122,7 @@ Entitas utama:
 - `purchase_orders` - Purchase orders dengan status workflow
 - `stock_transactions` - Riwayat transaksi stok (IN/OUT/ADJUSTMENT)
 - `demand_history` - Riwayat permintaan bulanan
+- `notifications` - Notifikasi sistem per pengguna
 
 ## Rumus EOQ
 
@@ -144,6 +151,7 @@ npm run db:migrate   # Push Prisma schema
 npm run db:setup     # Setup database views/functions
 npm run db:seed      # Seed demo data
 npm run db:reset     # Reset database + seed ulang
+npm run db:truncate  # Kosongkan semua tabel, reset ID ke 1
 ```
 
 ## Konfigurasi Tambahan
