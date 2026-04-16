@@ -6,14 +6,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -51,13 +44,16 @@ import {
   Eye,
   Send,
   Check,
+  Trash2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useToast } from "@/components/toast";
 
 export default function PurchaseOrdersPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedPO, setSelectedPO] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -129,6 +125,10 @@ export default function PurchaseOrdersPage() {
       queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
       setShowCreateDialog(false);
       resetForm();
+      toast.success("Purchase Order berhasil dibuat");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal membuat Purchase Order");
     },
   });
 
@@ -145,8 +145,19 @@ export default function PurchaseOrdersPage() {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
+      const messages: Record<string, string> = {
+        submit: "PO berhasil diajukan",
+        approve: "PO berhasil disetujui",
+        receive: "PO berhasil diterima dan stok diperbarui",
+      };
+      toast.success(
+        messages[variables.action] || "Status PO berhasil diperbarui",
+      );
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal memperbarui status PO");
     },
   });
 
@@ -189,6 +200,32 @@ export default function PurchaseOrdersPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validate
+    if (!formData.supplier_id) {
+      setError("Supplier harus dipilih");
+      return;
+    }
+    if (formData.items.length === 0) {
+      setError("Tambahkan minimal 1 item pada PO");
+      return;
+    }
+    for (let i = 0; i < formData.items.length; i++) {
+      const item = formData.items[i];
+      if (!item.product_id) {
+        setError(`Item #${i + 1}: Produk harus dipilih`);
+        return;
+      }
+      if (!item.quantity_ordered || parseFloat(item.quantity_ordered) <= 0) {
+        setError(`Item #${i + 1}: Quantity harus lebih dari 0`);
+        return;
+      }
+      if (!item.unit_price || parseFloat(item.unit_price) <= 0) {
+        setError(`Item #${i + 1}: Harga satuan harus lebih dari 0`);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -326,98 +363,87 @@ export default function PurchaseOrdersPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>PO Number</TableHead>
-                      <TableHead>Supplier</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Tanggal
-                      </TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Aksi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {purchaseOrders?.length === 0 ? (
-                      <tr key="empty">
-                        <TableCell colSpan={6} className="text-center py-8">
-                          Belum ada PO. Klik "Buat PO" untuk membuat.
-                        </TableCell>
-                      </tr>
-                    ) : (
-                      purchaseOrders?.map((po: any) => (
-                        <tr key={po.po_id}>
-                          <TableCell className="font-medium">
-                            {po.po_number}
-                          </TableCell>
-                          <TableCell>{po.suppliers?.supplier_name}</TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            {new Date(po.order_date).toLocaleDateString(
-                              "id-ID",
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {formatCurrency(po.total_amount)}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(po.status)}</TableCell>
-                          <TableCell>
-                            <div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedPO(po)}
-                              >
-                                <div>
-                                  <Eye className="h-4 w-4" />
-                                </div>
-                              </Button>
-
-                              {canCreate && po.status === "draft" && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    updateStatusMutation.mutate({
-                                      poId: po.po_id,
-                                      action: "submit",
-                                    })
-                                  }
-                                  disabled={updateStatusMutation.isPending}
-                                >
-                                  <div>
-                                    <Send className="h-4 w-4" />
-                                  </div>
-                                </Button>
-                              )}
-
-                              {canApprove && po.status === "diajukan" && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    updateStatusMutation.mutate({
-                                      poId: po.po_id,
-                                      action: "approve",
-                                    })
-                                  }
-                                  disabled={updateStatusMutation.isPending}
-                                >
-                                  <div>
-                                    <Check className="h-4 w-4" />
-                                  </div>
-                                </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </tr>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+              <DataTable
+                data={purchaseOrders || []}
+                searchKeys={["po_number", "suppliers"]}
+                emptyMessage='Belum ada PO. Klik "Buat PO" untuk membuat.'
+                columns={[
+                  {
+                    key: "po_number",
+                    header: "PO Number",
+                    cell: (po: any) => (
+                      <span className="font-medium">{po.po_number}</span>
+                    ),
+                  },
+                  {
+                    key: "supplier_name",
+                    header: "Supplier",
+                    cell: (po: any) => po.suppliers?.supplier_name,
+                  },
+                  {
+                    key: "order_date",
+                    header: "Tanggal",
+                    className: "hidden sm:table-cell",
+                    cell: (po: any) =>
+                      new Date(po.order_date).toLocaleDateString("id-ID"),
+                  },
+                  {
+                    key: "total_amount",
+                    header: "Total",
+                    cell: (po: any) => formatCurrency(po.total_amount),
+                  },
+                  {
+                    key: "status",
+                    header: "Status",
+                    cell: (po: any) => getStatusBadge(po.status),
+                  },
+                  {
+                    key: "actions",
+                    header: "Aksi",
+                    cell: (po: any) => (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedPO(po)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        {canCreate && po.status === "draft" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              updateStatusMutation.mutate({
+                                poId: po.po_id,
+                                action: "submit",
+                              })
+                            }
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {canApprove && po.status === "diajukan" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              updateStatusMutation.mutate({
+                                poId: po.po_id,
+                                action: "approve",
+                              })
+                            }
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ),
+                  },
+                ]}
+              />
             )}
           </CardContent>
         </Card>
@@ -504,13 +530,94 @@ export default function PurchaseOrdersPage() {
 
                 {/* Items */}
                 <div className="space-y-2">
-                  <Label>Item PO</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Item PO</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          items: [
+                            ...formData.items,
+                            {
+                              product_id: "",
+                              product_name: "",
+                              quantity_ordered: "",
+                              unit_price: "",
+                              notes: "",
+                            },
+                          ],
+                        })
+                      }
+                    >
+                      <Plus className="mr-1 h-3 w-3" />
+                      Tambah Item
+                    </Button>
+                  </div>
+
+                  {formData.items.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Belum ada item. Klik "Tambah Item" atau buat dari
+                      rekomendasi EOQ.
+                    </p>
+                  )}
+
                   {formData.items.map((item, index) => (
                     <div
                       key={index}
                       className="p-3 border rounded-lg space-y-2"
                     >
-                      <p className="text-sm font-medium">{item.product_name}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">Item #{index + 1}</p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newItems = formData.items.filter(
+                              (_, i) => i !== index,
+                            );
+                            setFormData({ ...formData, items: newItems });
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
+
+                      <Select
+                        value={item.product_id}
+                        onValueChange={(value) => {
+                          const product = products?.find(
+                            (p: any) => p.product_id.toString() === value,
+                          );
+                          const newItems = [...formData.items];
+                          newItems[index] = {
+                            ...newItems[index],
+                            product_id: value,
+                            product_name: product?.product_name || "",
+                          };
+                          setFormData({ ...formData, items: newItems });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih produk" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {products
+                            ?.filter((p: any) => p.is_active)
+                            .map((product: any) => (
+                              <SelectItem
+                                key={product.product_id}
+                                value={product.product_id.toString()}
+                              >
+                                {product.product_code} - {product.product_name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <Label className="text-xs">Quantity</Label>
@@ -522,6 +629,7 @@ export default function PurchaseOrdersPage() {
                               newItems[index].quantity_ordered = e.target.value;
                               setFormData({ ...formData, items: newItems });
                             }}
+                            placeholder="0"
                             disabled={isSubmitting}
                           />
                         </div>
@@ -535,13 +643,21 @@ export default function PurchaseOrdersPage() {
                               newItems[index].unit_price = e.target.value;
                               setFormData({ ...formData, items: newItems });
                             }}
+                            placeholder="0"
                             disabled={isSubmitting}
                           />
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {item.notes}
-                      </p>
+                      <Input
+                        value={item.notes}
+                        onChange={(e) => {
+                          const newItems = [...formData.items];
+                          newItems[index].notes = e.target.value;
+                          setFormData({ ...formData, items: newItems });
+                        }}
+                        placeholder="Catatan item (opsional)"
+                        disabled={isSubmitting}
+                      />
                     </div>
                   ))}
                 </div>
@@ -569,9 +685,7 @@ export default function PurchaseOrdersPage() {
                   <div>Batal</div>
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   <div>Buat PO</div>
                 </Button>
               </DialogFooter>
@@ -581,7 +695,7 @@ export default function PurchaseOrdersPage() {
 
         {/* PO Detail Dialog */}
         <Dialog open={!!selectedPO} onOpenChange={() => setSelectedPO(null)}>
-          <DialogContent className="sm:max-w-150">
+          <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
             {selectedPO && (
               <>
                 <DialogHeader>
@@ -591,6 +705,7 @@ export default function PurchaseOrdersPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
+                  {/* PO Info */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Supplier</p>
@@ -608,20 +723,89 @@ export default function PurchaseOrdersPage() {
                         )}
                       </p>
                     </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Estimasi Tiba
+                      </p>
+                      <p className="font-medium">
+                        {selectedPO.expected_delivery_date
+                          ? new Date(
+                              selectedPO.expected_delivery_date,
+                            ).toLocaleDateString("id-ID")
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Aktual Tiba
+                      </p>
+                      <p className="font-medium">
+                        {selectedPO.actual_delivery_date
+                          ? new Date(
+                              selectedPO.actual_delivery_date,
+                            ).toLocaleDateString("id-ID")
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Disetujui</p>
+                      <p className="font-medium">
+                        {selectedPO.users_purchase_orders_approved_byTousers
+                          ?.full_name || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Tanggal Setuju
+                      </p>
+                      <p className="font-medium">
+                        {selectedPO.approved_at
+                          ? new Date(selectedPO.approved_at).toLocaleDateString(
+                              "id-ID",
+                            )
+                          : "-"}
+                      </p>
+                    </div>
                   </div>
 
+                  {selectedPO.notes && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Catatan PO
+                      </p>
+                      <p className="font-medium">{selectedPO.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Items */}
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Items</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Item ({selectedPO.purchase_order_items?.length || 0})
+                    </p>
                     <div className="space-y-2">
                       {selectedPO.purchase_order_items?.map(
                         (item: any, index: number) => (
                           <div key={index} className="p-3 border rounded-lg">
-                            <p className="font-medium">
-                              {item.products?.product_name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Qty: {item.quantity_ordered} x{" "}
-                              {formatCurrency(item.unit_price)} ={" "}
+                            <div className="flex justify-between items-start">
+                              <p className="font-medium">
+                                {item.products?.product_name}
+                              </p>
+                              <span className="text-xs text-muted-foreground">
+                                Diterima:{" "}
+                                {parseFloat(
+                                  item.quantity_received || 0,
+                                ).toLocaleString("id-ID")}{" "}
+                                /{" "}
+                                {parseFloat(
+                                  item.quantity_ordered,
+                                ).toLocaleString("id-ID")}
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {parseFloat(item.quantity_ordered).toLocaleString(
+                                "id-ID",
+                              )}{" "}
+                              x {formatCurrency(item.unit_price)} ={" "}
                               {formatCurrency(
                                 Number(item.quantity_ordered) *
                                   Number(item.unit_price),

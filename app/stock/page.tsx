@@ -1,17 +1,11 @@
+// Stock management
 "use client";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -39,10 +33,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 export default function StockPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     product_id: "",
@@ -92,6 +88,10 @@ export default function StockPage() {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       setOpen(false);
       resetForm();
+      toast.success("Transaksi stok berhasil dicatat");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal mencatat transaksi stok");
     },
   });
 
@@ -133,10 +133,12 @@ export default function StockPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Stok">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Manajemen Stok</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Manajemen Stok
+            </h1>
             <p className="text-muted-foreground mt-1">
               Kelola stok dan catat transaksi persediaan
             </p>
@@ -263,7 +265,7 @@ export default function StockPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     Simpan
                   </Button>
@@ -278,79 +280,82 @@ export default function StockPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produk</TableHead>
-                  <TableHead>Kategori</TableHead>
-                  <TableHead>Stok Saat Ini</TableHead>
-                  <TableHead>Min. Stok</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Terakhir Update</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {stock?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      Belum ada data stok
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  stock?.map((item: any) => {
-                    const status = getStockStatus(
-                      parseFloat(item.current_quantity),
-                      parseFloat(item.products?.min_stock ?? 0),
-                    );
-                    return (
-                      <TableRow key={item.stock_id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">
-                              {item.products?.product_name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {item.products?.product_code}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {item.products?.categories?.category_name ?? "-"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Package className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">
-                              {parseFloat(item.current_quantity).toLocaleString(
-                                "id-ID",
-                              )}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {item.products?.units?.unit_abbreviation ?? ""}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {parseFloat(
-                            item.products?.min_stock ?? 0,
-                          ).toLocaleString("id-ID")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={status.variant}>{status.label}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(item.last_updated).toLocaleDateString(
-                            "id-ID",
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            data={stock || []}
+            searchKeys={["products"]}
+            emptyMessage="Belum ada data stok"
+            columns={[
+              {
+                key: "product",
+                header: "Produk",
+                cell: (item: any) => {
+                  const status = getStockStatus(
+                    parseFloat(item.current_quantity),
+                    parseFloat(item.products?.min_stock ?? 0),
+                  );
+                  return (
+                    <div>
+                      <p className="font-medium">
+                        {item.products?.product_name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.products?.product_code}
+                      </p>
+                    </div>
+                  );
+                },
+              },
+              {
+                key: "category_name",
+                header: "Kategori",
+                className: "hidden md:table-cell",
+                cell: (item: any) =>
+                  item.products?.categories?.category_name ?? "-",
+              },
+              {
+                key: "current_quantity",
+                header: "Stok Saat Ini",
+                cell: (item: any) => (
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">
+                      {parseFloat(item.current_quantity).toLocaleString(
+                        "id-ID",
+                      )}{" "}
+                      {item.products?.units?.unit_abbreviation ?? ""}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                key: "min_stock",
+                header: "Min. Stok",
+                className: "hidden sm:table-cell",
+                cell: (item: any) =>
+                  parseFloat(item.products?.min_stock ?? 0).toLocaleString(
+                    "id-ID",
+                  ),
+              },
+              {
+                key: "status",
+                header: "Status",
+                cell: (item: any) => {
+                  const status = getStockStatus(
+                    parseFloat(item.current_quantity),
+                    parseFloat(item.products?.min_stock ?? 0),
+                  );
+                  return <Badge variant={status.variant}>{status.label}</Badge>;
+                },
+              },
+              {
+                key: "last_updated",
+                header: "Terakhir Update",
+                className: "hidden lg:table-cell",
+                cell: (item: any) =>
+                  new Date(item.last_updated).toLocaleDateString("id-ID"),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>

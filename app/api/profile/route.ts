@@ -1,4 +1,3 @@
-// Profile update API - allows any logged-in user to update their own profile
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -33,7 +32,7 @@ export async function GET() {
     console.error("Error fetching profile:", error);
     return NextResponse.json(
       { error: "Failed to fetch profile" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -51,7 +50,7 @@ export async function PUT(request: Request) {
     if (!full_name || !email) {
       return NextResponse.json(
         { error: "Full name and email are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -66,7 +65,7 @@ export async function PUT(request: Request) {
     if (existingUser) {
       return NextResponse.json(
         { error: "Email already in use" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -93,7 +92,7 @@ export async function PUT(request: Request) {
     console.error("Error updating profile:", error);
     return NextResponse.json(
       { error: "Failed to update profile" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

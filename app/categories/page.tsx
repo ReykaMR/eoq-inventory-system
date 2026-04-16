@@ -4,14 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -31,9 +24,9 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  Package,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 interface Category {
   category_id: number;
@@ -48,6 +41,7 @@ interface Category {
 export default function CategoriesPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
@@ -85,6 +79,10 @@ export default function CategoriesPage() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       setOpen(false);
       resetForm();
+      toast.success("Kategori berhasil ditambahkan");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menambahkan Kategori");
     },
   });
 
@@ -112,6 +110,10 @@ export default function CategoriesPage() {
       setOpen(false);
       setEditingCategory(null);
       resetForm();
+      toast.success("Kategori berhasil diperbarui");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal memperbarui Kategori");
     },
   });
 
@@ -128,6 +130,10 @@ export default function CategoriesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Kategori berhasil dihapus");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menghapus Kategori");
     },
   });
 
@@ -150,6 +156,14 @@ export default function CategoriesPage() {
       is_active: category.is_active,
     });
     setOpen(true);
+  };
+
+  const handleDelete = (id: number, name: string) => {
+    if (
+      window.confirm(`Apakah Anda yakin ingin menghapus Kategori "${name}"?`)
+    ) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,7 +201,7 @@ export default function CategoriesPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Kategori">
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -249,7 +263,7 @@ export default function CategoriesPage() {
                           category_name: e.target.value,
                         })
                       }
-                      placeholder="Contoh: Bahan Baku"
+                      placeholder="Contoh: Bahan Pabrik"
                       required
                       disabled={isSubmitting}
                     />
@@ -297,7 +311,7 @@ export default function CategoriesPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     {editingCategory ? "Perbarui" : "Simpan"}
                   </Button>
@@ -312,92 +326,73 @@ export default function CategoriesPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Kode</TableHead>
-                    <TableHead>Nama</TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Deskripsi
-                    </TableHead>
-                    <TableHead className="hidden sm:table-cell">
-                      Status
-                    </TableHead>
-                    <TableHead>Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
-                        <div className="flex flex-col items-center gap-3">
-                          <div className="bg-muted p-4 rounded-full">
-                            <Package className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Belum ada kategori</p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Klik "Tambah Kategori" untuk menambahkan.
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    categories?.map((category: Category) => (
-                      <TableRow key={category.category_id}>
-                        <TableCell className="font-medium">
-                          {category.category_code}
-                        </TableCell>
-                        <TableCell>{category.category_name}</TableCell>
-                        <TableCell className="hidden sm:table-cell max-w-xs truncate">
-                          {category.description || "-"}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge
-                            variant={
-                              category.is_active ? "default" : "secondary"
-                            }
-                            className="gap-1"
-                          >
-                            {category.is_active ? (
-                              <CheckCircle className="h-3 w-3" />
-                            ) : (
-                              <XCircle className="h-3 w-3" />
-                            )}
-                            {category.is_active ? "Aktif" : "Nonaktif"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(category)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                deleteMutation.mutate(category.category_id)
-                              }
-                              disabled={deleteMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <DataTable
+            data={categories || []}
+            searchKeys={["category_code", "category_name", "description"]}
+            emptyMessage='Belum ada kategori. Klik "Tambah Kategori" untuk menambahkan.'
+            columns={[
+              {
+                key: "category_code",
+                header: "Kode",
+                cell: (cat: any) => (
+                  <span className="font-medium">{cat.category_code}</span>
+                ),
+              },
+              {
+                key: "category_name",
+                header: "Nama",
+              },
+              {
+                key: "description",
+                header: "Deskripsi",
+                className: "hidden sm:table-cell",
+                cell: (cat: any) => cat.description || "-",
+              },
+              {
+                key: "is_active",
+                header: "Status",
+                className: "hidden sm:table-cell",
+                cell: (cat: any) => (
+                  <Badge
+                    variant={cat.is_active ? "default" : "secondary"}
+                    className="gap-1"
+                  >
+                    {cat.is_active ? (
+                      <CheckCircle className="h-3 w-3" />
+                    ) : (
+                      <XCircle className="h-3 w-3" />
+                    )}
+                    {cat.is_active ? "Aktif" : "Nonaktif"}
+                  </Badge>
+                ),
+              },
+              {
+                key: "actions",
+                header: "Aksi",
+                cell: (cat: any) => (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(cat)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        handleDelete(cat.category_id, cat.category_name)
+                      }
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>

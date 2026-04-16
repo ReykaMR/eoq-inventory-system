@@ -114,17 +114,32 @@ Langkah-langkah ini dilakukan **sekali saja** saat pertama kali menggunakan sist
    - **Status** — `AMAN` (hijau), `REORDER` (kuning), `HABIS` (merah)
 3. Jika status **REORDER** atau **HABIS**, lanjut ke langkah 3.3
 
-### 3.3 Membuat Purchase Order (PO) dari Rekomendasi EOQ
+### 3.3 Membuat Purchase Order (PO)
 
+Ada 2 cara membuat PO:
+
+**Cara 1: Dari Rekomendasi EOQ**
 1. Di **Dashboard**, lihat bagian **Rekomendasi EOQ - Perlu Pesan**
 2. Klik **Buat PO dari EOQ** pada produk yang perlu dipesan
 3. Form PO akan terisi otomatis:
    - Supplier sudah terpilih
    - Jumlah pesanan sudah terisi dari nilai EOQ
    - Estimasi tanggal tiba sudah dihitung dari lead time
-4. Tambahkan catatan jika perlu
-5. Klik **Buat PO**
-6. Status PO akan menjadi **Draft**
+4. Klik **Buat PO**
+
+**Cara 2: Manual**
+1. Klik menu **Purchase Orders**
+2. Klik **Buat PO**
+3. Pilih supplier dari dropdown
+4. Klik **Tambah Item** untuk menambah produk:
+   - Pilih produk dari dropdown
+   - Isi quantity dan harga satuan
+   - Tambahkan catatan jika perlu
+   - Ulangi untuk produk lainnya
+5. Isi tanggal order dan estimasi tiba
+6. Klik **Buat PO**
+
+Status PO akan menjadi **Draft** setelah dibuat.
 
 ### 3.4 Mengelola Status PO (Workflow)
 
@@ -168,7 +183,34 @@ Langkah-langkah ini dilakukan **sekali saja** saat pertama kali menggunakan sist
 4. Klik **Tandai Semua Dibaca** untuk membersihkan semua notifikasi
 5. Klik **Hapus** (icon sampah) untuk menghapus notifikasi individual
 
-### 4.3 Menghitung Ulang EOQ
+### 4.3 Riwayat Transaksi Stok
+
+1. Klik menu **Riwayat Stok** di sidebar
+2. Lihat semua riwayat perubahan stok:
+   - **Produk** — nama dan kode produk
+   - **Jenis** — Pemasukan, Pengeluaran, Penyesuaian, atau Penerimaan PO
+   - **Jumlah** — perubahan stok (+/-)
+   - **Sebelum & Sesudah** — level stok sebelum dan sesudah transaksi
+   - **Referensi** — sumber transaksi (misal: PO)
+   - **Oleh** — siapa yang melakukan transaksi
+   - **Tanggal** — waktu transaksi
+3. Filter berdasarkan **produk** atau **jenis transaksi** jika diperlukan
+
+### 4.4 Hasil Perhitungan EOQ
+
+1. Klik menu **Hasil EOQ** di sidebar
+2. Lihat semua hasil perhitungan EOQ per produk:
+   - **EOQ (Q\*)** — jumlah pesanan optimal
+   - **Reorder Point** — batas stok minimum untuk reorder
+   - **Safety Stock** — stok pengaman
+   - **Order/Tahun** — frekuensi pesanan per tahun
+   - **Interval Order** — jarak antar pesanan (hari)
+   - **Biaya Pesan/Simpan/Inventori** — detail biaya tahunan
+   - **Lead Time** — waktu tunggu pengiriman
+3. Filter berdasarkan **produk** jika diperlukan
+4. Klik **Tambah Parameter EOQ** jika belum ada perhitungan
+
+### 4.5 Menghitung Ulang EOQ
 
 1. Klik menu **EOQ Parameters**
 2. Pada baris produk yang ingin dihitung ulang, klik **Hitung Ulang**
@@ -182,26 +224,26 @@ Langkah-langkah ini dilakukan **sekali saja** saat pertama kali menggunakan sist
 ┌─────────────────────────────────────────────────────────────┐
 │ 1. Dashboard menampilkan alert "Perlu Pesan"                │
 │    → Stok produk X sudah di bawah Reorder Point             │
-│    → Sistem menampilkan EOQ: 250 unit                        │
+│    → Sistem menampilkan EOQ: 250 unit                       │
 ├─────────────────────────────────────────────────────────────┤
 │ 2. Staff Pembelian klik "Buat PO dari EOQ"                  │
 │    → Form PO otomatis terisi:                               │
-│      • Supplier: PT Supplier ABC                             │
-│      • Jumlah: 250 unit (dari EOQ)                           │
+│      • Supplier: PT Supplier ABC                            │
+│      • Jumlah: 250 unit (dari EOQ)                          │
 │      • Estimasi tiba: 7 hari (dari lead time)               │
-│    → Status: Draft                                           │
+│    → Status: Draft                                          │
 ├─────────────────────────────────────────────────────────────┤
-│ 3. Staff Pembelian klik "Kirim"                              │
-│    → Status berubah: Diajukan                                │
+│ 3. Staff Pembelian klik "Kirim"                             │
+│    → Status berubah: Diajukan                               │
 ├─────────────────────────────────────────────────────────────┤
-│ 4. Manager klik "Setujui"                                    │
-│    → Status berubah: Disetujui                               │
-│    → PO dikirim ke supplier                                  │
+│ 4. Manager klik "Setujui"                                   │
+│    → Status berubah: Disetujui                              │
+│    → PO dikirim ke supplier                                 │
 ├─────────────────────────────────────────────────────────────┤
-│ 5. Barang diterima di gudang                                 │
-│    → Staff Gudang catat transaksi "Pemasukan"                │
-│    → Stok bertambah 250 unit                                 │
-│    → Status di Dashboard kembali "Aman"                      │
+│ 5. Barang diterima di gudang                                │
+│    → Staff Gudang catat transaksi "Pemasukan"               │
+│    → Stok bertambah 250 unit                                │
+│    → Status di Dashboard kembali "Aman"                     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -216,3 +258,5 @@ Langkah-langkah ini dilakukan **sekali saja** saat pertama kali menggunakan sist
 | **Set stok minimum dengan tepat** | Stok minimum yang terlalu rendah berisiko kehabisan, terlalu tinggi meningkatkan biaya simpan |
 | **Gunakan notifikasi** | Cek notifikasi setiap hari untuk mengetahui stok yang perlu reorder |
 | **Stock opname rutin** | Lakukan penyesuaian stok secara berkala untuk memastikan data akurat |
+| **Bersihkan notifikasi lama** | Hapus notifikasi yang sudah tidak relevan agar tetap rapi |
+| **Reset database untuk testing** | Gunakan `npm run db:reset` untuk mengisi ulang data demo, atau `npm run db:truncate` untuk mengosongkan semua tabel |

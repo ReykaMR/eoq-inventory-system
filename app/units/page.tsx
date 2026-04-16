@@ -1,3 +1,4 @@
+// CRUD satuan
 "use client";
 
 import { useState } from "react";
@@ -25,6 +26,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
+import { DataTable } from "@/components/common/DataTable";
 
 interface Unit {
   unit_id: number;
@@ -35,6 +38,7 @@ interface Unit {
 export default function UnitsPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [formData, setFormData] = useState({
@@ -70,6 +74,10 @@ export default function UnitsPage() {
       queryClient.invalidateQueries({ queryKey: ["units"] });
       setOpen(false);
       resetForm();
+      toast.success("Satuan berhasil ditambahkan");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal menambahkan satuan");
     },
   });
 
@@ -91,6 +99,10 @@ export default function UnitsPage() {
       setOpen(false);
       setEditingUnit(null);
       resetForm();
+      toast.success("Satuan berhasil diperbarui");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal memperbarui satuan");
     },
   });
 
@@ -107,6 +119,10 @@ export default function UnitsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["units"] });
+      toast.success("Satuan berhasil dihapus");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Gagal menghapus satuan");
     },
   });
 
@@ -125,6 +141,12 @@ export default function UnitsPage() {
       unit_abbreviation: unit.unit_abbreviation,
     });
     setOpen(true);
+  };
+
+  const handleDelete = (id: number, name: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus satuan "${name}"?`)) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -162,7 +184,7 @@ export default function UnitsPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Satuan">
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -175,7 +197,7 @@ export default function UnitsPage() {
           <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Tambah Satuan
               </Button>
             </DialogTrigger>
@@ -238,7 +260,7 @@ export default function UnitsPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     {editingUnit ? "Perbarui" : "Simpan"}
                   </Button>
@@ -253,58 +275,47 @@ export default function UnitsPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nama Satuan</TableHead>
-                    <TableHead>Singkatan</TableHead>
-                    <TableHead>Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {units?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} className="text-center py-8">
-                        Belum ada satuan. Klik &quot;Tambah Satuan&quot; untuk menambahkan.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    units?.map((unit: Unit) => (
-                      <TableRow key={unit.unit_id}>
-                        <TableCell className="font-medium">
-                          {unit.unit_name}
-                        </TableCell>
-                        <TableCell>{unit.unit_abbreviation}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(unit)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                deleteMutation.mutate(unit.unit_id)
-                              }
-                              disabled={deleteMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <DataTable
+            data={units || []}
+            searchKeys={["unit_name", "unit_abbreviation"]}
+            emptyMessage='Belum ada satuan. Klik "Tambah Satuan" untuk menambahkan.'
+            columns={[
+              {
+                key: "unit_name",
+                header: "Nama Satuan",
+                cell: (unit: any) => (
+                  <span className="font-medium">{unit.unit_name}</span>
+                ),
+              },
+              {
+                key: "unit_abbreviation",
+                header: "Singkatan",
+              },
+              {
+                key: "actions",
+                header: "Aksi",
+                cell: (unit: any) => (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(unit)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(unit.unit_id, unit.unit_name)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>

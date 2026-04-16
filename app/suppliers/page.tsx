@@ -4,14 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/DataTable";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +26,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/toast";
 
 interface Supplier {
   supplier_id: number;
@@ -53,6 +47,7 @@ interface Supplier {
 export default function SuppliersPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [open, setOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [formData, setFormData] = useState({
@@ -96,6 +91,10 @@ export default function SuppliersPage() {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       setOpen(false);
       resetForm();
+      toast.success("Supplier berhasil ditambahkan");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menambahkan Supplier");
     },
   });
 
@@ -123,6 +122,10 @@ export default function SuppliersPage() {
       setOpen(false);
       setEditingSupplier(null);
       resetForm();
+      toast.success("Supplier berhasil diperbarui");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal memperbarui Supplier");
     },
   });
 
@@ -139,6 +142,10 @@ export default function SuppliersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
+      toast.success("Supplier berhasil dihapus");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal menghapus Supplier");
     },
   });
 
@@ -173,6 +180,14 @@ export default function SuppliersPage() {
       is_active: supplier.is_active,
     });
     setOpen(true);
+  };
+
+  const handleDelete = (id: number, name: string) => {
+    if (
+      window.confirm(`Apakah Anda yakin ingin menghapus Supplier "${name}"?`)
+    ) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -210,10 +225,12 @@ export default function SuppliersPage() {
 
   return (
     <AppLayout pageTitle="Manajemen Supplier">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold">Manajemen Supplier</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Manajemen Supplier
+            </h1>
             <p className="text-muted-foreground mt-1">
               Kelola data supplier untuk sistem EOQ
             </p>
@@ -403,7 +420,7 @@ export default function SuppliersPage() {
                   </Button>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     )}
                     {editingSupplier ? "Perbarui" : "Simpan"}
                   </Button>
@@ -418,85 +435,95 @@ export default function SuppliersPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Kode</TableHead>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Kontak</TableHead>
-                  <TableHead>Telepon</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Kota</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {suppliers?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      Belum ada supplier. Klik &quot;Tambah Supplier&quot; untuk
-                      menambahkan.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  suppliers?.map((supplier: Supplier) => (
-                    <TableRow key={supplier.supplier_id}>
-                      <TableCell className="font-medium">
-                        {supplier.supplier_code}
-                      </TableCell>
-                      <TableCell>{supplier.supplier_name}</TableCell>
-                      <TableCell>{supplier.contact_person || "-"}</TableCell>
-                      <TableCell>{supplier.phone || "-"}</TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {supplier.email || "-"}
-                      </TableCell>
-                      <TableCell>{supplier.city || "-"}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={supplier.is_active ? "default" : "secondary"}
-                        >
-                          {supplier.is_active ? (
-                            <>
-                              <CheckCircle className="h-3 w-3" />
-                              Aktif
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-3 w-3" />
-                              Nonaktif
-                            </>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(supplier)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              deleteMutation.mutate(supplier.supplier_id)
-                            }
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            data={suppliers || []}
+            searchKeys={[
+              "supplier_code",
+              "supplier_name",
+              "contact_person",
+              "phone",
+              "email",
+              "city",
+            ]}
+            emptyMessage='Belum ada supplier. Klik "Tambah Supplier" untuk menambahkan.'
+            columns={[
+              {
+                key: "supplier_code",
+                header: "Kode",
+                cell: (s: any) => (
+                  <span className="font-medium">{s.supplier_code}</span>
+                ),
+              },
+              { key: "supplier_name", header: "Nama" },
+              {
+                key: "contact_person",
+                header: "Kontak",
+                cell: (s: any) => s.contact_person || "-",
+              },
+              {
+                key: "phone",
+                header: "Telepon",
+                cell: (s: any) => s.phone || "-",
+              },
+              {
+                key: "email",
+                header: "Email",
+                className: "hidden lg:table-cell",
+                cell: (s: any) => s.email || "-",
+              },
+              {
+                key: "city",
+                header: "Kota",
+                className: "hidden md:table-cell",
+                cell: (s: any) => s.city || "-",
+              },
+              {
+                key: "is_active",
+                header: "Status",
+                className: "hidden sm:table-cell",
+                cell: (s: any) => (
+                  <Badge variant={s.is_active ? "default" : "secondary"}>
+                    {s.is_active ? (
+                      <>
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Aktif
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="mr-1 h-3 w-3" />
+                        Nonaktif
+                      </>
+                    )}
+                  </Badge>
+                ),
+              },
+              {
+                key: "actions",
+                header: "Aksi",
+                cell: (s: any) => (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(s)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        handleDelete(s.supplier_id, s.supplier_name)
+                      }
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     </AppLayout>
