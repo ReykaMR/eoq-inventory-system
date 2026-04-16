@@ -45,10 +45,10 @@ Aplikasi ini membantu mengelola inventaris dan menentukan waktu serta jumlah pem
 
 | Kategori | Teknologi |
 |----------|-----------|
-| **Framework** | Next.js 15 (App Router) |
+| **Framework** | Next.js 16 (App Router) |
 | **Database** | PostgreSQL + Prisma ORM |
 | **Auth** | NextAuth.js (JWT) |
-| **Styling** | Tailwind CSS 3 + shadcn/ui |
+| **Styling** | Tailwind CSS 4 + shadcn/ui |
 | **State** | TanStack React Query |
 | **Charts** | Recharts |
 
